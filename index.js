@@ -63,7 +63,7 @@ client.on('ready', () => {
 		res.html(
 			"Venom",
 			`<p>Enter a phone number in url, in this format:</p>
-			<p style="font-weight:bold;">&lt;country code&gt;&lt;personal phone number&gt;</p>
+			<p style="font-weight:bold;">&lt;country code&gt;&lt;personal number&gt;</p>
 			<p style="text-decoration: underline; margin-top:80px;">Example:</p>
 			<table>
 				<tr>

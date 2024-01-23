@@ -25,6 +25,12 @@ Or using docker :
 make
 ```
 
+## How it works
+
+Once launched, type any phone number in the format **&lt;country code&gt;&lt;personal number&gt;** directly in the url :
+- [+44 1234 123456 (HTML)](http://localhost/441234123456)
+- [+44 1234 123456 (JSON)](http://localhost/441234123456?json)
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
