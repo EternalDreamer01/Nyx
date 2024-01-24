@@ -4,6 +4,30 @@
 
 Venom is a simple application - based on [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js/), and inspired by [venom](https://github.com/orkestral/venom/blob/master/.github/workflows/nightly.yml) - that aims to make data collection simpler and more practical.
 
+
+## Inspected application
+
+### Messaging
+
+- [x] WhatsApp
+- [x] Telegram
+- [ ] Messenger
+- [ ] Snapchat
+
+### Dating
+
+- [ ] Tinder
+- [ ] Meetic
+
+### Social
+
+- [ ] Instagram
+- [ ] TikTok
+- [ ] LinkedIn
+- [ ] Twitter
+- [ ] Facebook
+- [ ] Reddit
+
 ## Disclaimer
 
 This project is intended for educational and lawful purposes only. The primary goal is to provide users with a platform to learn and experiment with various technologies, programming languages, and security concepts in a controlled environment. The creators and contributors of this project do not endorse or support any malicious activities, including but not limited to hacking, unauthorized access, or any form of cybercrime.
