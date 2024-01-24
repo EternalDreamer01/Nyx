@@ -1,0 +1,24 @@
+{
+	"not_found": "This phone number is not registered on WhatsApp or does not have enough public information",
+	"filter": {
+		"telegram": [
+			"mutualContact",
+			"bot",
+			"verified",
+			"restricted",
+			"support",
+			"scam",
+			"fake",
+			"premium",
+			"storiesHidden",
+			"storiesUnavailable",
+			"id",
+			"accessHash",
+			"firstName",
+			"lastName",
+			"username",
+			"photo",
+			"status"
+		]
+	}
+}
