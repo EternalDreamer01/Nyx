@@ -5,16 +5,18 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import fs from "fs";
 
-import { Telegram, TelegramApi } from "./src/telegram.js";
-import { WhatsApp, WhatsAppUser } from "./src/whatsapp.js";
-import "./src/utils/proto.js";
+import * as Telegram from "./src/telegram.js";
+import * as WhatsApp from "./src/whatsapp.js";
+import * as Instagram from "./src/instagram.js";
+import * as Facebook from "./src/facebook.js";
 import config from "./config.json" assert { type: "json" };
+import "./src/utils/proto.js";
 
 
 export const root = dirname(fileURLToPath(import.meta.url));
 
 
-Promise.all([Telegram, WhatsApp])
+Promise.all([Telegram.Client, WhatsApp.Client])
 	.then(res => start(res))
 	.catch(err => console.error(err));
 
@@ -50,7 +52,7 @@ function start([TelegramClient, WhatsAppClient]) {
 			<p><a href="/441234123456">441234123456</a></p>`
 		});
 	});
-	app.get('/:phone', async (req, res) => {
+	app.get('/phone/:phone', async (req, res) => {
 		try {
 			console.log("Looking for " + req.params.phone);
 
@@ -61,7 +63,7 @@ function start([TelegramClient, WhatsAppClient]) {
 				wa.getAbout()
 			]);
 			const tg = await TelegramClient.invoke(
-				new TelegramApi.contacts.ResolvePhone({
+				new Telegram.Api.contacts.ResolvePhone({
 					phone: req.params.phone
 				})
 			);
@@ -78,11 +80,7 @@ function start([TelegramClient, WhatsAppClient]) {
 						number,
 						about
 					},
-					telegram: tg.users.map(user => (
-							Object.entries(user)
-							.filter(([key]) => config.filter.telegram.includes(key))
-							.reduce((prev, curr) => ({...prev, [curr[0]]:curr[1]}), {})
-					))
+					telegram: tg.users.filterObject(config.filter.telegram)
 				});
 
 			let html = (picture !== undefined ? `<img src="${picture}" />` : "") + "<table>" +
@@ -108,6 +106,49 @@ function start([TelegramClient, WhatsAppClient]) {
 				res.html({ title: "Not found", content: config.not_found });
 		}
 	});
+
+	app.get("/name/:name", async (req, res) => {
+		try {
+			const ig = await Instagram.Get(req.params.name);
+			const tg = await TelegramClient.invoke(
+				new Telegram.Api.contacts.Search({
+					q: req.params.name,
+					limit: 1
+				})
+			);
+			res.json({
+				instagram: ig.filter(config.filter.instagram),
+				telegram: tg.users.filterObject(config.filter.telegram)
+			});
+		}
+		catch (e) {
+			res.status(400).end();
+		}
+	});
+
+	app.get("/search/:name", async (req, res) => {
+		try {
+			const fb = await Facebook.Search(req.params.name);
+			const ig = await Instagram.Search(req.params.name);
+			const tg = await TelegramClient.invoke(
+				new Telegram.Api.contacts.Search({
+					q: req.params.name,
+					limit: 400
+				})
+			);
+			console.log(fb, ig, config.filter);
+			res.json({
+				facebook: fb,
+				instagram: ig?.filterFn(({ user }) => user.filter(config.filter.instagram)),
+				telegram: tg.users.filterObject(config.filter.telegram)
+			});
+		}
+		catch (err) {
+			res.status(400).end();
+		}
+	});
+
+	app.use((_, res) => res.reply(404));
 
 	app.listen(port, () => {
 		console.log(`Example app listening on port ${port}`)

@@ -1,13 +1,10 @@
-import WhatsAppWeb from 'whatsapp-web.js';
+import WhatsApp from 'whatsapp-web.js';
 import QRCcode from "qrcode-terminal"
 
 
-const { Client, LocalAuth, Contact } = WhatsAppWeb;
-export const WhatsAppUser = Contact;
-
-export const WhatsApp = new Promise(async resolve => {
-	const client = new Client({
-		authStrategy: new LocalAuth({
+export const Client = new Promise(async resolve => {
+	const client = new WhatsApp.Client({
+		authStrategy: new WhatsApp.LocalAuth({
 			dataPath: 'auth'
 		}),
 		puppeteer: {

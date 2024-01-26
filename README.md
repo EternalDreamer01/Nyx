@@ -12,7 +12,8 @@ Venom is a simple application - based on [whatsapp-web.js](https://github.com/pe
 - [x] WhatsApp
 - [x] Telegram
 - [ ] Messenger
-- [ ] Snapchat
+- [ ] WeChat
+- [ ] Kakao Talk
 
 ### Dating
 
@@ -21,12 +22,35 @@ Venom is a simple application - based on [whatsapp-web.js](https://github.com/pe
 
 ### Social
 
-- [ ] Instagram
+- [ ] Snapchat
+- [x] Instagram
 - [ ] TikTok
 - [ ] LinkedIn
 - [ ] Twitter
-- [ ] Facebook
+- [-] Facebook *(search only)*
 - [ ] Reddit
+
+
+## Access
+
+***These variables shall be configured within your [.env](.env) (create one at root if you don't have one)***
+
+| Application | Access functioning |
+|-|-|
+| WhatsApp | QR code |
+| Telegram | [**API Token**](https://my.telegram.org/apps) |
+| *Messenger* | [**API Token**](https://developers.facebook.com/apps) |
+| Instagram (search) | *No* |
+| Instagram (get user profile) | __Cookie:__ ds_user_id, sessionid |
+| Facebook (search) | __Header:__ X-FB-LSD, __Cookie:__ c_user, xs, __Additional data:__ fb_dtsg |
+
+| Token functioning | Description |
+|-|-|
+| ***No*** | No authentication is required |
+| **QR code** | You will be asked to scan QR code from your mobile application |
+| **Cookie(s)**, **Header(s)** or **Additional data** | Passing cookies, headers or additional data from your web browser. This implies pre-authentication within your web browser. Make sure to check "Stay signed in" if asked |
+| **API token** | Requires developer access token |
+
 
 ## Disclaimer
 

@@ -19,6 +19,32 @@
 			"username",
 			"photo",
 			"status"
+		],
+		"instagram": [
+			"biography",
+			"edge_followed_by",
+			"edge_follow",
+			"full_name",
+			"highlight_reel_count",
+			"id",
+			"is_business_account",
+			"is_professional_account",
+			"category_name",
+			"is_private",
+			"edge_mutual_followed_by",
+			"profile_pic_url",
+			"profile_pic_url_hd",
+			"show_account_transparency_details",
+			"username",
+			"is_verified",
+			"connected_fb_page",
+			"pronouns",
+			"edge_owner_to_timeline_media"
 		]
+	},
+	"crawl": {
+		"facebook": {
+			"any": "sed -E 's/\"/\n/g' | egrep '/(media|photo|video)s?/'"
+		}
 	}
 }
