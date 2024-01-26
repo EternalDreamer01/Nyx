@@ -27,7 +27,7 @@ Venom is a simple application - based on [whatsapp-web.js](https://github.com/pe
 - [ ] TikTok
 - [ ] LinkedIn
 - [ ] Twitter
-- [-] Facebook *(search only)*
+- [~] Facebook *(search only)*
 - [ ] Reddit
 
 
