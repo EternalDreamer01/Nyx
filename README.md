@@ -68,9 +68,9 @@ By using this project, you acknowledge and agree to abide by the principles outl
 npm start
 ```
 
-Or using docker :
+Or using docker compose :
 ```sh
-make
+docker-compose up --build
 ```
 
 ## How it works
