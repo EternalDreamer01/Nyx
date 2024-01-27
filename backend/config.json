@@ -1,5 +1,12 @@
 {
+	"timeout": 30000,
 	"not_found": "This phone number is not registered on WhatsApp or does not have enough public information",
+	"corsWhitelist": [
+		"http://localhost:3000",
+		"http://localhost:3001",
+		"http://127.0.0.1:3000",
+		"http://127.0.0.1:3001"
+	],
 	"filter": {
 		"telegram": [
 			"mutualContact",
@@ -45,6 +52,11 @@
 	"crawl": {
 		"facebook": {
 			"any": "sed -E 's/\"/\n/g' | egrep '/(media|photo|video)s?/'"
+		}
+	},
+	"externalCors": {
+		"instagram": {
+			"t": "t"
 		}
 	}
 }

@@ -1,8 +1,8 @@
 import WhatsApp from 'whatsapp-web.js';
 import QRCcode from "qrcode-terminal"
+import { TimedPromise } from "./utils/misc.js";
 
-
-export const Client = new Promise(async resolve => {
+export const Client = TimedPromise("WhatsApp", async resolve => {
 	const client = new WhatsApp.Client({
 		authStrategy: new WhatsApp.LocalAuth({
 			dataPath: 'auth'

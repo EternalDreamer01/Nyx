@@ -33,7 +33,7 @@ Venom is a simple application - based on [whatsapp-web.js](https://github.com/pe
 
 ## Access
 
-***These variables shall be configured within your [.env](.env) (create one at root if you don't have one)***
+***These variables shall be configured within your [.env](.env)*** (create one at root if you don't have one)
 
 | Application | Access functioning |
 |-|-|
@@ -75,9 +75,12 @@ make
 
 ## How it works
 
-Once launched, type any phone number in the format **&lt;country code&gt;&lt;personal number&gt;** directly in the url :
-- [+44 1234 123456 (HTML)](http://localhost/441234123456)
-- [+44 1234 123456 (JSON)](http://localhost/441234123456?json)
+*There are 3 options*
+| Option | Example | Description |
+|-|-|-|
+| **Search** | John Smith | Search for a user that match approximately to get a list |
+| **Focus** | john_smith | Focus on a particular user. You must know their exact (user)name |
+| **Phone** | +44 1234 123456 | Search a phone number |
 
 ## Contributing
 
