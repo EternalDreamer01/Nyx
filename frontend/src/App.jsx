@@ -6,24 +6,26 @@ import './App.css';
 
 const MinimalUserInfo = memo(({ firstName, lastName, full_name, username, name, picture, photo, profile_pic_url, profile_pic_url_hd }) => {
 	const titleName = (() => {
-		if (firstName !== undefined && lastName !== undefined)
-			return `${firstName} ${lastName}`;
+		let title = "";
+		if (typeof firstName === "string")
+			title += firstName;
+		if (typeof lastName === "string")
+			title += lastName;
+		if(title !== "")
+			return title;
 		return full_name || username || name;
 	})();
 
 	return (
-		<div>
-			<div className="flex flex-row">
-				<img
-					src={picture || photo || profile_pic_url_hd || profile_pic_url}
-					alt={`Profile picture of ${titleName}`}
-					crossOrigin
-					className='max-w-md'
-				/>
-				<h3>{titleName}</h3>
-			</div>
-			<div></div>
-		</div>
+		<li className="flex flex-row items-center">
+			<img
+				src={picture || photo || profile_pic_url_hd || profile_pic_url}
+				alt={titleName}
+				crossOrigin
+				className='w-48 rounded-lg'
+			/>
+			<h3 className='w-18'>{titleName}</h3>
+		</li>
 	);
 }, () => false);
 
@@ -94,14 +96,14 @@ function App() {
 					result.error !== undefined ?
 						<p>{result.error}</p>
 						:
-						<div>
+						<ul>
 							{
 								Object.entries(result)
 									.map(([title, data]) => (
 										<Network title={title} data={data} />
 									))
 							}
-						</div>
+						</ul>
 				)
 			}
 		</div>

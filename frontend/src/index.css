@@ -32,14 +32,13 @@ h3 {
 	font-size: 14pt;
 	font-weight: bold;
 	margin-top: 8px;
+	padding-left: 20px;
 }
 
 * {
 	color: white;
 	font-family: 'Ubuntu', 'Segoe UI', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 	text-align: left;
-	margin-left: auto;
-	margin-right: auto;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
