@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
-import request from "request";
+// import request from "request";
 import express from "express";
+import cors from "cors";
 
 import * as Telegram from "./src/telegram.js";
 import * as WhatsApp from "./src/whatsapp.js";
@@ -27,6 +28,7 @@ if (ENABLED_API !== undefined) {
 		}
 	}
 }
+
 else enabled_api = available_api;
 
 Promise.all(Object.values(enabled_api).map(Api => Api.Client))
@@ -38,16 +40,22 @@ function start({ TelegramClient, WhatsAppClient }) {
 
 	const app = express();
 
-	app.use(function (req, res, next) {
-		if (config.corsWhitelist.indexOf(req.headers.origin) !== -1) {
-			res.header('Access-Control-Allow-Origin', req.headers.origin);
-			res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-		}
-		res.header('Cross-Origin-Resource-Policy', 'cross-origin');
-		res.header('Cross-Origin-Embedder-Policy', 'credentialless');
-		res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
-		next();
-	});
+	// app.use(cors({origin: '*'}));
+	app.use(
+		cors({ origin: config.corsWhitelist })
+	);
+
+	// app.use(function (req, res, next) {
+	// 	if (config.corsWhitelist.indexOf(req.headers.origin) !== -1) {
+	// 		res.header('Access-Control-Allow-Origin', req.headers.origin);
+	// 		res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+	// 		res.setHeader('Access-Control-Allow-Credentials', true);
+	// 	}
+	// 	res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+	// 	res.header('Cross-Origin-Embedder-Policy', 'credentialless');
+	// 	res.header('Cross-Origin-Opener-Policy', 'unsafe-none');
+	// 	next();
+	// });
 
 	app.get('/', (_, res) => {
 		res.json({});
@@ -58,8 +66,8 @@ function start({ TelegramClient, WhatsAppClient }) {
 			req.params.phone = req.params.phone.replaceAll(/\D/g, '');
 
 			const wa = await WhatsAppClient?.getContactById(req.params.phone + "@c.us");
-			var picture, number, about; 
-			if(wa !== undefined)
+			var picture, number, about;
+			if (wa !== undefined)
 				var [picture, number, about] = await Promise.all([
 					wa.getProfilePicUrl(),
 					wa.getFormattedNumber(),
@@ -71,21 +79,24 @@ function start({ TelegramClient, WhatsAppClient }) {
 				})
 			);
 
+			tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
+
 			if (wa?.pushname === undefined && !picture && !about && !tg?.users?.length)
 				throw new Error("Not found");
 
 			res.json({
-				whatsapp: wa?.pushname === undefined && !picture && !about ? null : {
+				WhatsApp: wa?.pushname === undefined && !picture && !about ? null : {
 					name: wa?.pushname,
 					shortname: wa?.shortName,
 					picture,
 					number,
 					about
 				},
-				telegram: tg?.users?.filterObject(config.filter.telegram)
+				Telegram: tg?.users?.filterObject(config.filter.telegram)
 			});
 		}
 		catch (e) {
+			console.error(e)
 			res.status(204).json({ error: config.not_found });
 		}
 	});
@@ -99,9 +110,10 @@ function start({ TelegramClient, WhatsAppClient }) {
 					limit: 1
 				})
 			);
+			tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
 			res.json({
-				instagram: ig?.filter(config.filter.instagram),
-				telegram: tg?.users?.filterObject(config.filter.telegram)
+				Instagram: ig?.filter(config.filter.instagram),
+				Telegram: tg?.users?.filterObject(config.filter.telegram)
 			});
 		}
 		catch (e) {
@@ -119,6 +131,7 @@ function start({ TelegramClient, WhatsAppClient }) {
 					limit: 400
 				})
 			);
+			tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
 			console.log(fb, ig, config.filter);
 			res.json({
 				facebook: fb?.map(({ node }) => node),

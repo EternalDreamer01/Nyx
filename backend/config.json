@@ -2,6 +2,10 @@
 	"timeout": 30000,
 	"not_found": "This phone number is not registered on WhatsApp or does not have enough public information",
 	"corsWhitelist": [
+		"https://scontent-dfw5-1.cdninstagram.com",
+		"https://scontent-dfw5-2.cdninstagram.com",
+		"https://www.instagram.com",
+		"https://pps.whatsapp.net",
 		"http://localhost:3000",
 		"http://localhost:3001",
 		"http://127.0.0.1:3000",

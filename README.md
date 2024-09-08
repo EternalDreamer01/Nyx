@@ -2,7 +2,7 @@
 
 ## Overview
 
-Venom is a simple application - based on [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js/), and inspired by [venom](https://github.com/orkestral/venom/blob/master/.github/workflows/nightly.yml) - that aims to make data collection simpler and more practical.
+Venom is a simple application - based on [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js/), and inspired by [venom](https://github.com/orkestral/venom) - that aims to make data collection simpler and more practical.
 
 
 ## Inspected application

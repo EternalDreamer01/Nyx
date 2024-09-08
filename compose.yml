@@ -1,25 +1,16 @@
-version: '3'
-
 services:
   venom:
-    restart: always
+    restart: no
     build:
       context: backend
-    networks:
-      - venom
+    network_mode: bridge
     ports:
       - 8080:8080
   front:
     build:
       context: frontend
-    networks:
-      - venom
-    expose:
-      - 3000
     ports:
       - 3001:3000
     depends_on:
       - venom
-networks:
-  venom:
-    driver: overlay
+    network_mode: host

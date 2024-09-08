@@ -31,3 +31,14 @@ export const Client = TimedPromise("Telegram", async resolve => {
 		resolve(null);
 	}
 })
+
+export async function getPhotos(TelegramClient, userList) {
+	for(let i = 0; i < userList.length && i < 10 ; ++i) {
+		const photo = await TelegramClient.downloadProfilePhoto(userList[i].id, {
+			isBig: true
+		});
+		if(Buffer.isBuffer(photo))
+			userList[i].photo = "data:image/jpeg;base64,"+(photo.toString('base64'));
+	}
+	return userList;
+}

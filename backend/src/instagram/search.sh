@@ -13,4 +13,4 @@ curl 'https://www.instagram.com/api/graphql' --compressed -X POST \
 -H 'Sec-Fetch-Dest: empty' \
 -H 'Sec-Fetch-Mode: cors' \
 -H 'Sec-Fetch-Site: same-origin' \
--H 'TE: trailers' --data-raw "variables=%7B%22data%22%3A%7B%22context%22%3A%22blended%22%2C%22include_reel%22%3A%22true%22%2C%22query%22%3A%22$1%22%2C%22rank_token%22%3A%221%7Ca%22%2C%22search_surface%22%3A%22web_top_search%22%7D%2C%22hasQuery%22%3Atrue%7D&server_timestamps=true&doc_id=6901177919928333" \
+-H 'TE: trailers' --data-raw "variables=%7B%22data%22%3A%7B%22context%22%3A%22blended%22%2C%22include_reel%22%3A%22true%22%2C%22query%22%3A%22$1%22%2C%22rank_token%22%3A%221%7Ca%22%2C%22search_surface%22%3A%22web_top_search%22%7D%2C%22hasQuery%22%3Atrue%7D&server_timestamps=true&doc_id=6901177919928333"

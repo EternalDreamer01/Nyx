@@ -4,7 +4,7 @@ import ReactLoading from 'react-loading';
 import './App.css';
 
 
-const MinimalUserInfo = memo(({ firstName, lastName, full_name, username, name, profile_pic_url, profile_pic_url_hd }) => {
+const MinimalUserInfo = memo(({ firstName, lastName, full_name, username, name, picture, photo, profile_pic_url, profile_pic_url_hd }) => {
 	const titleName = (() => {
 		if (firstName !== undefined && lastName !== undefined)
 			return `${firstName} ${lastName}`;
@@ -15,9 +15,10 @@ const MinimalUserInfo = memo(({ firstName, lastName, full_name, username, name, 
 		<div>
 			<div className="flex flex-row">
 				<img
-					src={profile_pic_url}
+					src={picture || photo || profile_pic_url_hd || profile_pic_url}
 					alt={`Profile picture of ${titleName}`}
 					crossOrigin
+					className='max-w-md'
 				/>
 				<h3>{titleName}</h3>
 			</div>
