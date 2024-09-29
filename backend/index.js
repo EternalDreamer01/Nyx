@@ -3,6 +3,7 @@
 // import request from "request";
 import express from "express";
 import cors from "cors";
+import 'dotenv/config'
 
 import * as Telegram from "./src/telegram.js";
 import * as WhatsApp from "./src/whatsapp.js";
@@ -73,13 +74,19 @@ function start({ TelegramClient, WhatsAppClient }) {
 					wa.getFormattedNumber(),
 					wa.getAbout()
 				]);
-			const tg = await TelegramClient?.invoke(
-				new Telegram.Api.contacts.ResolvePhone({
-					phone: req.params.phone
-				})
-			);
+			var tg = null;
+			try {
+				tg = await TelegramClient?.invoke(
+					new Telegram.Api.contacts.ResolvePhone({
+						phone: req.params.phone
+					})
+				);
 
-			tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
+				tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
+			}
+			catch (err) {
+				console.error(err);
+			}
 
 			if (wa?.pushname === undefined && !picture && !about && !tg?.users?.length)
 				throw new Error("Not found");
