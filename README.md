@@ -15,21 +15,6 @@ Venom is a simple application - based on [whatsapp-web.js](https://github.com/pe
 - [ ] WeChat
 - [ ] Kakao Talk
 
-### Dating
-
-- [ ] Tinder
-- [ ] Meetic
-
-### Social
-
-- [ ] Snapchat
-- [x] Instagram
-- [ ] TikTok
-- [ ] LinkedIn
-- [ ] Twitter
-- [x] Facebook ~ *(search only)*
-- [ ] Reddit
-
 
 ## Access
 
@@ -39,17 +24,6 @@ Venom is a simple application - based on [whatsapp-web.js](https://github.com/pe
 |-|-|
 | WhatsApp | QR code |
 | Telegram | [**API Token**](https://my.telegram.org/apps) |
-| *Messenger* | [**API Token**](https://developers.facebook.com/apps) |
-| Instagram (search) | *No* |
-| Instagram (get user profile) | __Cookie:__ ds_user_id, sessionid |
-| Facebook (search) | __Header:__ X-FB-LSD, __Cookie:__ c_user, xs, __Additional data:__ fb_dtsg |
-
-| Token functioning | Description |
-|-|-|
-| ***No*** | No authentication is required |
-| **QR code** | You will be asked to scan QR code from your mobile application |
-| **Cookie(s)**, **Header(s)** or **Additional data** | Passing cookies, headers or additional data from your web browser. This implies pre-authentication within your web browser. Make sure to check "Stay signed in" if asked |
-| **API token** | Requires developer access token |
 
 
 ## Disclaimer
@@ -64,23 +38,14 @@ By using this project, you acknowledge and agree to abide by the principles outl
 
 ## Launch
 
-```sh
-npm start
-```
 
-Or using docker compose :
-```sh
-docker-compose up --build
-```
+## FAQ
 
-## How it works
+### Is the user notified ?
+No
 
-*There are 3 options*
-| Option | Example | Description |
-|-|-|-|
-| **Search** | John Smith | Search for a user that match approximately to get a list |
-| **Focus** | john_smith | Focus on a particular user. You must know their exact (user)name |
-| **Phone** | +44 1234 123456 | Search a phone number |
+### Is it possible to login as another phone number but personal ?
+Yes, depending on the region where you live. It's a common thing to buy SIM card 
 
 ## Contributing
 

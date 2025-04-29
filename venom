@@ -1,0 +1,394 @@
+#!/usr/bin/env node
+
+require("dotenv/config");
+
+const { Api: TelegramApi, TelegramClient, Logger: TelegramLogger } = require("telegram");
+const { StringSession } = require("telegram/sessions/index.js");
+const input = require("input");
+const WhatsApp = require("whatsapp-web.js");
+const QRCcode = require("qrcode-terminal");
+const fs = require('fs');
+const request = require('request');
+
+require('yargs').help(false);
+const { argv } = require('yargs');
+
+// const base64MinLen = "data:image/jpeg;base64,".length
+// const httpMinLen = "https://".length
+const Telegram = {
+	photo: {
+		get: async function (client, userList) {
+			for (let i = 0; i < userList.length && i < 10; ++i) {
+				userList[i].photo = await client.downloadProfilePhoto(userList[i].id, {
+					isBig: true
+				});
+			}
+			return userList;
+		},
+		isAvailable: (buf) => {
+			if (Buffer.isBuffer(buf))
+				return buf.byteLength !== 0;
+			else if (typeof buf === "string")
+				return buf.length !== 0;
+
+			return false;
+		}
+	}
+}
+
+
+const download = (url, dest, cb) => {
+	const file = fs.createWriteStream(dest);
+	const sendReq = request.get(url);
+
+	// verify response code
+	sendReq.on('response', (response) => {
+		if (response.statusCode !== 200) {
+			return cb('Response status was ' + response.statusCode);
+		}
+
+		sendReq.pipe(file);
+	});
+
+	// close() is async, call cb after close completes
+	file.on('finish', () => file.close(cb));
+
+	// check for request errors
+	sendReq.on('error', (err) => {
+		fs.unlink(dest, () => cb(err.message)); // delete the (partial) file and then return the error
+	});
+
+	file.on('error', (err) => { // Handle errors
+		fs.unlink(dest, () => cb(err.message)); // delete the (partial) file and then return the error
+	});
+};
+
+const { API_TELEGRAM_TOKEN, API_TELEGRAM_ID, API_TELEGRAM_HASH, DEFAULT_INFO_FORMAT } = process.env;
+
+const prog = process.argv[1].split(/\\|\//).pop();
+
+// https://www.asciiart.eu/image-to-ascii
+const logo = `                          ▒▒                        ░▒                          
+                         ▓██▒                       ▓██                         
+                        ▓████▒                 ░  ░▒████                        
+                        ███████                 ████████                        
+                        ███████░              ░ ▓███████                        
+                        ███████  ░          ▓ ░ ████████                        
+  ░               ░      ██████░      ░      ░░░███████       ░                 
+               ░           ████░    ░           █████   ░                       
+           ▒░░             ▒ ████░             ████             ░░░             
+                             █ ███▒          ▒██▓ ░  ░               ░░         
+                          ▒▒░                     ░ ░                           
+                 ▓          █▓ █             ░▒█████  ░      ▓             ░    
+               ░             █▒ ░▓ █▓▒█ ░█▒██ ███▓▓        ▒   ░                
+                               █▓▒  █   █     ▒ ▓       ░ ░                     
+                                 █           ░░▓           ░                    
+                                 ▒  █        ░▓                              ░ ░
+\x1b[4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m \x1b[1mphone\x1b[0m                  █ ▓  █ ▒                          ░░        
+`
+
+async function main() {
+	try {
+		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
+			console.log(`${logo}
+  \x1b[1mphone\x1b[0m           International format
+
+  --no-save       Do not save anything
+  --save          Save user info to file
+  --format=FORMAT Define output format (default: \x1b[1m${DEFAULT_INFO_FORMAT || "text"}\x1b[0m)
+                  Available formats: 'text', 'json'
+  --no-colour     No colour (only usable in 'text' format for stdout)
+
+  -h  --help      Show this help
+`)
+			return 0;
+		}
+		// console.log(argv)
+		// return 0;
+		const phone = argv._[0]
+			.replaceAll(' ', '')
+			.replace(/^(\+*)(0*)/g, '')
+			.replace(/\\|\/|\./g, '');
+		fs.mkdirSync(phone, { recursive: true });
+
+		argv.colour = argv.colour !== false;
+
+
+		const format = (() => {
+			if(typeof argv.format === "string")
+				return argv.format.toLowerCase();
+			if(typeof argv.f === "string")
+				return argv.f.toLowerCase();
+			return  !DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "text" ? "text" : "json";
+		})();
+
+		const colour = (...args) => !argv.colour ? "" : "\x1b[" + args.join(";") + "m";
+
+		const dataJson = {
+			whatsapp: undefined,
+			telegram: undefined
+		};
+		let dataText = "";
+
+		const printText = text => {
+			console.log(text);
+			dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
+		}
+		// const printJson = json => {
+		// console.log(json);
+		// 	return json;
+		// }
+
+		{
+			const user = await new Promise(resolve => {
+				const WhatsAppClient = new WhatsApp.Client({
+					authStrategy: new WhatsApp.LocalAuth(),
+					puppeteer: {
+						headless: true,
+						args: [
+							'--no-default-browser-check',
+							'--disable-session-crashed-bubble',
+							'--disable-dev-shm-usage',
+							'--no-sandbox',
+							'--disable-setuid-sandbox',
+							'--disable-accelerated-2d-canvas',
+							'--no-first-run',
+						],
+						takeoverOnConflict: true,
+					}
+				});
+
+				WhatsAppClient.on('qr', qr => {
+					console.log('Scan the following QR Code:');
+					QRCcode.generate(qr, { small: true });
+				});
+				WhatsAppClient.on('authenticated', qr => {
+					// console.log("Authenticated");
+				});
+				WhatsAppClient.on('ready', async () => {
+					try {
+						resolve(await WhatsAppClient.getContactById(phone + "@c.us"));
+					}
+					catch (e) {
+						console.error(e);
+						resolve(null);
+					}
+				});
+				WhatsAppClient.initialize();
+			})
+			if (user !== null) {
+				const [picture, number, about, chat] = await Promise.all([
+					user.getProfilePicUrl(),
+					user.getFormattedNumber(),
+					user.getAbout(),
+					user.getChat()
+				]);
+				if (format === "text") {
+					printText(`${colour("1;4")}WhatsApp:${colour("0")}
+  Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
+
+  Name:          ${colour("36")}${user.name || ""}${colour("0")}
+  Pushname:      ${colour("36")}${user.pushname || ""}${colour("0")}
+  Short name:    ${colour("36")}${user.shortName || ""}${colour("0")}
+
+  Picture:       ${picture || ""}
+  Phone:         ${colour("32")}${number || ""}${colour("0")}
+  About:         ${colour("33")}${about || ""}${colour("0")}
+  Last activity: ${typeof chat?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}
+`);
+					// 					dataText += `WhatsApp:
+					//   Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
+
+					//   Name:          ${user.name || ""}
+					//   Pushname:      ${user.pushname || ""}
+					//   Short name:    ${user.shortName || ""}
+
+					//   Picture:       ${picture || ""}
+					//   Phone:         ${number || ""}
+					//   About:         ${about || ""}
+					//   Last activity: ${typeof chat?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}
+					// `
+				}
+				else {
+					dataJson.whatsapp = {
+						type: user.isBusiness ? "Business" : user.isUser ? "User" : null,
+						name: user.name || "",
+						pushname: user.pushname || "",
+						shortname: user.shortName || "",
+						picture: picture || "",
+						phone: number || "",
+						about: about || "",
+						lastActivity: chat?.timestamp === "number" ? new Date(chat.timestamp * 1000) : null
+					}
+				}
+				if (argv.save !== false && typeof picture === "string")
+					download(picture, `${phone}/whatsapp.${picture.split('?', 2)[0].split('.').pop()}`);
+			}
+		}
+		const client = new TelegramClient(
+			new StringSession(API_TELEGRAM_TOKEN),
+			parseInt(API_TELEGRAM_ID),
+			API_TELEGRAM_HASH,
+			{
+				baseLogger: new TelegramLogger("warn")
+			});
+
+		await client.start({
+			phoneNumber: async () => await input.text("Phone number:"),
+			password: async () => await input.text("Account password:"),
+			phoneCode: async () => await input.text("Received code:"),
+			onError: err => undefined /*console.error(err)*/,
+		});
+		if (!API_TELEGRAM_TOKEN) {
+			console.log("Telegram token:", client.session.save());
+			console.log("Make sure to save it safely");
+		}
+		await client.connect();
+
+		try {
+			const tg = await client?.invoke(
+				new TelegramApi.contacts.ResolvePhone({
+					phone
+				})
+			);
+			if (tg !== undefined)
+				tg.users = await Telegram.photo.get(client, tg.users);
+
+			if (format === "text") {
+				printText(`${colour("1;4")}Telegram:${colour("0")}`);
+				const multipleAccount = tg.users.length !== 1;
+				const pad = multipleAccount ? "    " : "  ";
+				for (let i = 0; i < tg.users.length; ++i) {
+					const {
+						className,
+						id,
+						accessHash,
+						verified,
+						restricted,
+						premium,
+						storiesHidden,
+						botBusiness,
+						firstName,
+						lastName,
+						username,
+						phone: phoneNumber,
+						photo,
+						restrictionReason,
+						langCode,
+						status
+					} = tg.users[i];
+					const { wasOnline } = status || { wasOnline: null }
+
+					if (multipleAccount)
+						console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:${colour("0")}`)
+					printText(`${pad}Type:          ${className}
+${pad}ID:            ${id}
+${pad}Access Hash:   ${accessHash}
+${pad}Bot Business:  ${botBusiness}
+${pad}Restricted:    ${restricted}
+${pad}Restriction Reason: ${restrictionReason || ""}
+	
+${pad}First name:    ${colour("34")}${firstName || ""}${colour("0")}
+${pad}Last name:     ${colour("34")}${lastName || ""}${colour("0")}
+${pad}Username:      ${colour("36")}${username || ""}${colour("0")}
+
+${pad}Verified:      ${colour("35")}${verified}${colour("0")}
+${pad}Premium:       ${colour("35")}${premium}${colour("0")}
+${pad}Picture:       ${colour("35")}${Telegram.photo.isAvailable(photo) ? "Have" : "Do not have"}${colour("0")}
+${pad}Phone:         ${colour("32")}${phoneNumber || ""}${colour("0")}
+${pad}Language:      ${colour("32")}${langCode || ""}${colour("0")}
+${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}`);
+					if (argv.save !== false && Telegram.photo.isAvailable(photo))
+						fs.writeFileSync(`${phone}/telegram-${i}.jpg`, photo);
+				}
+			}
+			else {
+				dataJson.telegram = tg.users.map(user => {
+					const {
+						className,
+						id,
+						accessHash,
+						verified,
+						restricted,
+						premium,
+						storiesHidden,
+						botBusiness,
+						firstName,
+						lastName,
+						username,
+						phone: __phone,
+						photo,
+						restrictionReason,
+						langCode,
+						status
+					} = user;
+					const { wasOnline } = status || { wasOnline: null };
+					return {
+						className,
+						id: parseInt(id),
+						accessHash: parseInt(accessHash),
+						verified,
+						restricted,
+						premium,
+						storiesHidden,
+						botBusiness,
+						firstName,
+						lastName,
+						username,
+						phone: __phone,
+						photo: Telegram.photo.isAvailable(photo),
+						restrictionReason,
+						lang: langCode,
+						lastActivity: new Date(wasOnline * 1000)
+					};
+				})
+			}
+		}
+		catch (e) {
+			if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
+				console.log("  ❌ Phone not occupied");
+			else
+				console.error(e);
+		}
+
+		// console.log("\x1b[1;32mDone.\x1b[0m");
+		if(format === "json")
+			console.log(JSON.stringify(dataJson));
+		if (argv.save === true)
+			fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
+		
+		return 0;
+
+		// {
+		// 	const tg = await TelegramClient?.invoke(
+		// 		new TelegramApi.contacts.Search({
+		// 			q: req.params.name,
+		// 			limit: 1
+		// 		})
+		// 	);
+		// 	tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
+		// 	console.log(tg?.users?.filterObject(config.filter.telegram));
+		// } {
+		// 	const tg = await TelegramClient?.invoke(
+		// 		new TelegramApi.contacts.Search({
+		// 			q: req.params.name,
+		// 			limit: 400
+		// 		})
+		// 	);
+		// 	tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
+		// 	console.log(tg?.users?.filterObject(config.filter.telegram));
+		// }
+	}
+	catch (e) {
+		console.error(e);
+		// if (argv.save === true)
+		// 	fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : dataJson);
+		return 1;
+		// process.exit(1)
+	}
+
+	// process.exit(0)
+}
+main()
+	.then(status => process.exit(status))
+	.catch(() => process.exit(1))
