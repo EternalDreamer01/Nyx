@@ -11,9 +11,6 @@ i = 0
 
 output = ""
 
-#print(picture)
-#print(alligator)
-
 for c in picture:
     if lf == 0:
         if c == " ":

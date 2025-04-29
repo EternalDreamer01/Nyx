@@ -2,7 +2,7 @@
 
 ## Overview
 
-Venom is a simple application - based on [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js/), and inspired by [venom](https://github.com/orkestral/venom) - that aims to make data collection simpler and more practical.
+Venom is a simple application - based on [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js/), and inspired by [venom](https://github.com/orkestral/venom) to simplify information gathering for phone numbers.
 
 
 ## Inspected application
@@ -15,8 +15,18 @@ Venom is a simple application - based on [whatsapp-web.js](https://github.com/pe
 - [ ] WeChat
 - [ ] Kakao Talk
 
+## Install
 
-## Access
+```sh
+git clone https://github.com/MikeCod/venom-cli.git $HOME/.local/share/
+cd $HOME/.local/share/venom-cli
+npm i
+
+# To install systemwide, launch from anywhere (optional)
+sudo ln -s $HOME/.local/share/venom-cli/venom /usr/bin/venom
+```
+
+### Access
 
 ***These variables shall be configured within your [.env](.env)*** (create one at root if you don't have one)
 
@@ -35,9 +45,6 @@ Users are expected to use this project responsibly and in compliance with applic
 It is essential to respect the privacy and security of others and obtain explicit permission before attempting to access or modify any system or data. Any actions performed with the knowledge gained from this project should be conducted in an ethical manner, with a focus on enhancing cybersecurity awareness and promoting responsible use of technology.
 
 By using this project, you acknowledge and agree to abide by the principles outlined in this disclaimer. If you do not agree with these terms, you are not authorized to use or contribute to this project.
-
-## Launch
-
 
 ## FAQ
 

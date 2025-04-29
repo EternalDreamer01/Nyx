@@ -37,7 +37,6 @@ const Telegram = {
 	}
 }
 
-
 const download = (url, dest, cb) => {
 	const file = fs.createWriteStream(dest);
 	const sendReq = request.get(url);
