@@ -22,7 +22,7 @@ git clone https://github.com/MikeCod/venom-cli.git $HOME/.local/share/
 cd $HOME/.local/share/venom-cli
 npm i
 
-# To install systemwide, launch from anywhere (optional)
+# To install systemwide, to launch from anywhere (optional)
 sudo ln -s $HOME/.local/share/venom-cli/venom /usr/bin/venom
 ```
 
@@ -35,6 +35,13 @@ sudo ln -s $HOME/.local/share/venom-cli/venom /usr/bin/venom
 | WhatsApp | QR code |
 | Telegram | [**API Token**](https://my.telegram.org/apps) |
 
+## FAQ
+
+### Is the user notified about this ?
+No
+
+### Is it possible to login as another phone number but personal ?
+Yes, it's a common thing to buy a prepaid SIM card from tobacconists.
 
 ## Disclaimer
 
@@ -46,20 +53,10 @@ It is essential to respect the privacy and security of others and obtain explici
 
 By using this project, you acknowledge and agree to abide by the principles outlined in this disclaimer. If you do not agree with these terms, you are not authorized to use or contribute to this project.
 
-## FAQ
-
-### Is the user notified ?
-No
-
-### Is it possible to login as another phone number but personal ?
-Yes, depending on the region where you live. It's a common thing to buy SIM card 
-
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first
 to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
 
 ## License
 
