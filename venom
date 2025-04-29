@@ -104,13 +104,9 @@ async function main() {
 `)
 			return 0;
 		}
-		// console.log(argv)
-		// return 0;
-		const phone = argv._[0]
-			.replaceAll(' ', '')
-			.replace(/^(\+*)(0*)/g, '')
-			.replace(/\\|\/|\./g, '');
-		fs.mkdirSync(phone, { recursive: true });
+		const phone = typeof argv._[0] === "string" ? argv._[0].replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : argv._[0] + "";
+		if (argv.save !== false)
+			fs.mkdirSync(HOME + "/Venom/" + phone, { recursive: true });
 
 		argv.colour = argv.colour !== false;
 
@@ -184,7 +180,9 @@ async function main() {
 					user.getAbout(),
 					user.getChat()
 				]);
-				if (format === "text") {
+				if (!user.name && !user.pushname && !user.shortName && !picture && !about && typeof chat?.timestamp !== "number")
+					printText(`${colour("1;4")}WhatsApp:${colour("0")} ❌ Phone not occupied`);
+				else if (format === "text") {
 					printText(`${colour("1;4")}WhatsApp:${colour("0")}
   Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
 
@@ -347,7 +345,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 		}
 		catch (e) {
 			if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
-				console.log("  ❌ Phone not occupied");
+				printText(`${colour("1;4")}Telegram:${colour("0")} ❌ Phone not occupied`);
 			else
 				console.error(e);
 		}
