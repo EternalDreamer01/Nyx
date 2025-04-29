@@ -60,4 +60,4 @@ to discuss what you would like to change.
 
 ## License
 
-[MIT](LICENSE)
+[LGPL-3.0 or later](LICENSE)
