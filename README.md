@@ -35,6 +35,12 @@ sudo ln -s $HOME/.local/share/venom-cli/venom /usr/bin/venom
 | WhatsApp | QR code |
 | Telegram | [**API Token**](https://my.telegram.org/apps) |
 
+## Usage
+
+```sh
+$ venom "+44 0000 000000"
+```
+
 ## FAQ
 
 ### Is the user notified about this ?
