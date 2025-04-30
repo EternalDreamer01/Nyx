@@ -67,36 +67,33 @@ const { API_TELEGRAM_TOKEN, API_TELEGRAM_ID, API_TELEGRAM_HASH, DEFAULT_INFO_FOR
 
 const prog = process.argv[1].split(/\\|\//).pop();
 
-// https://www.asciiart.eu/image-to-ascii
-const logo = `                          ▒▒                        ░▒                          
-                         ▓██▒                       ▓██                         
-                        ▓████▒                 ░  ░▒████                        
-                        ███████                 ████████                        
-                        ███████░              ░ ▓███████                        
-                        ███████  ░          ▓ ░ ████████                        
-  ░               ░      ██████░      ░      ░░░███████       ░                 
-               ░           ████░    ░           █████   ░                       
-           ▒░░             ▒ ████░             ████             ░░░             
-                             █ ███▒          ▒██▓ ░  ░               ░░         
-                          ▒▒░                     ░ ░                           
-                 ▓          █▓ █             ░▒█████  ░      ▓             ░    
-               ░             █▒ ░▓ █▓▒█ ░█▒██ ███▓▓        ▒   ░                
-                               █▓▒  █   █     ▒ ▓       ░ ░                     
-                                 █           ░░▓           ░                    
-                                 ▒  █        ░▓                              ░ ░
-\x1b[4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m \x1b[1mphone\x1b[0m                  █ ▓  █ ▒                          ░░        
-`
+argv.colour = argv.colour !== false;
+const colour = (...args) => !argv.colour ? "" : "\x1b[" + args.join(";") + "m";
+
+// http://patorjk.com/software/taag/#p=display&f=Fraktur&t=nyx
+const logo = `                                        ..                      
+                           u.    u.    @L             uL   ..   
+                         x@88k u@88c. 9888i   .dL   .@88b  @88R 
+                        ^"8888""8888" \`Y888k:*888. '"Y888k/"*P  
+                          8888  888R    888E  888I    Y888L     
+                          8888  888R    888E  888I     8888     
+                          8888  888R    888E  888I     \`888N    
+                          8888  888R    888E  888I  .u./"888&   
+                         "*88*" 8888"  x888N><888' d888" Y888*" 
+                           ""   'Y"     "88"  888  \` "Y   Y"    
+${colour("4")}Usage:${colour("0")} ${colour("36")}${prog}${colour("0")} ${colour("1")}phone${colour("0")}                              88F               
+                                             98"                
+  ${colour("1")}phone${colour("0")}           International format     ./"                  
+                                          ~\``
 
 async function main() {
 	try {
-		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
+		if (process.argv.length < 3 || argv._.length === 0 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
-  \x1b[1mphone\x1b[0m           International format
-
-  --no-save       Do not save anything
-  --save          Save user info to file
-  --format=FORMAT Define output format (default: \x1b[1m${DEFAULT_INFO_FORMAT || "text"}\x1b[0m)
-                  Available formats: 'text', 'json'
+  -p --photo      Download photo
+  -s --save       Save all user data (implies photo) to into ${HOME}/${prog}
+  -f --format=FMT Define output format (default: ${colour("1")}${DEFAULT_INFO_FORMAT || "text"}${colour("0")})
+ t                Available formats: 'text', 'json'
   --no-colour     No colour (only usable in 'text' format for stdout)
 
   -h  --help      Show this help
@@ -105,10 +102,7 @@ async function main() {
 		}
 		const phone = typeof argv._[0] === "string" ? argv._[0].replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : argv._[0] + "";
 		if (argv.save !== false)
-			fs.mkdirSync(HOME + "/Venom/" + phone, { recursive: true });
-
-		argv.colour = argv.colour !== false;
-
+			fs.mkdirSync(`${HOME}/${prog.toUpperCase()}${prog.slice(1)}/${phone}`, { recursive: true });
 
 		const format = (() => {
 			if (typeof argv.format === "string")
@@ -118,7 +112,6 @@ async function main() {
 			return !DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "text" ? "text" : "json";
 		})();
 
-		const colour = (...args) => !argv.colour ? "" : "\x1b[" + args.join(";") + "m";
 
 		const dataJson = {
 			whatsapp: undefined,
@@ -138,7 +131,7 @@ async function main() {
 		{
 			const user = await new Promise(resolve => {
 				const WhatsAppClient = new WhatsApp.Client({
-					authStrategy: new WhatsApp.LocalAuth({ dataPath: HOME + "/.venom/.wwebjs_auth" }),
+					authStrategy: new WhatsApp.LocalAuth({ dataPath: `${HOME}/.${prog}/.wwebjs_auth` }),
 					puppeteer: {
 						headless: true,
 						args: [
@@ -349,7 +342,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 				console.error(e);
 		}
 
-		// console.log("\x1b[1;32mDone.\x1b[0m");
+		// console.log("${colour("1;32")}Done.${colour("0")}");
 		if (format === "json")
 			console.log(JSON.stringify(dataJson));
 		if (argv.save === true)

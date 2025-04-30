@@ -1,34 +1,30 @@
-# Venom
+# Nyx
 
 ## Overview
 
-Venom is a simple application - based on [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js/), and inspired by [venom](https://github.com/orkestral/venom) to simplify information gathering for phone numbers.
+Nyx is a simple information gathering tool for phone numbers based on [whatsapp-web.js](https://docs.wwebjs.dev/) .
 
 
 ## Inspected application
 
-### Messaging
-
 - [x] WhatsApp
 - [x] Telegram
-- [ ] Messenger
-- [ ] WeChat
-- [ ] Kakao Talk
+- [ ] ~~Messenger~~
+- [ ] ~~WeChat~~
+- [ ] ~~Kakao Talk~~
 
 ## Install
 
 ```sh
-git clone https://github.com/MikeCod/venom-cli.git $HOME/.local/share/
-cd $HOME/.local/share/venom-cli
+git clone https://github.com/MikeCod/Nyx.git $HOME/.local/share/nyx
+cd $HOME/.local/share/nyx
 npm i
-
-# To install systemwide, to launch from anywhere (optional)
-sudo ln -s $HOME/.local/share/venom-cli/venom /usr/bin/venom
+ln -s $HOME/.local/share/nyx/nyx $HOME/.local/bin/
 ```
 
 ### Access
 
-***These variables shall be configured within your [.env](.env)*** (create one at root if you don't have one)
+***These variables shall be configured within your .env*** (create one at root if you don't have one)
 
 | Application | Access functioning |
 |-|-|
@@ -37,8 +33,33 @@ sudo ln -s $HOME/.local/share/venom-cli/venom /usr/bin/venom
 
 ## Usage
 
+```node
+$ nyx
+                                        ..                      
+                           u.    u.    @L             uL   ..   
+                         x@88k u@88c. 9888i   .dL   .@88b  @88R 
+                        ^"8888""8888" `Y888k:*888. '"Y888k/"*P  
+                          8888  888R    888E  888I    Y888L     
+                          8888  888R    888E  888I     8888     
+                          8888  888R    888E  888I     `888N    
+                          8888  888R    888E  888I  .u./"888&   
+                         "*88*" 8888"  x888N><888' d888" Y888*" 
+                           ""   'Y"     "88"  888  ` "Y   Y"    
+Usage: nyx phone                              88F               
+                                             98"                
+  phone           International format     ./"                  
+                                          ~`
+  -p --photo      Download photo
+  -s --save       Save all user data (implies photo) to into /home/night/nyx
+  -f --format=FMT Define output format (default: text)
+ t                Available formats: 'text', 'json'
+  --no-colour     No colour (only usable in 'text' format for stdout)
+
+  -h  --help      Show this help
+```
+
 ```sh
-$ venom "+44 0000 000000"
+$ nyx "+44 0000 000000"
 ```
 
 ## FAQ
