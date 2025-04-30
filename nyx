@@ -91,7 +91,7 @@ async function main() {
 		if (process.argv.length < 3 || argv._.length === 0 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
   -p --photo      Download photo
-  -s --save       Save all user data (implies photo) to into ${HOME}/${prog}
+  -s --save       Save all user data (implies photo) into '${HOME}/${prog}'
   -f --format=FMT Define output format (default: ${colour("1")}${DEFAULT_INFO_FORMAT || "text"}${colour("0")})
  t                Available formats: 'text', 'json'
   --no-colour     No colour (only usable in 'text' format for stdout)

@@ -50,7 +50,7 @@ Usage: nyx phone                              88F
   phone           International format     ./"                  
                                           ~`
   -p --photo      Download photo
-  -s --save       Save all user data (implies photo) to into /home/night/nyx
+  -s --save       Save all user data (implies photo) into '/home/<user>/nyx'
   -f --format=FMT Define output format (default: text)
  t                Available formats: 'text', 'json'
   --no-colour     No colour (only usable in 'text' format for stdout)
