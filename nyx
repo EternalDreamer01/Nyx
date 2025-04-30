@@ -14,8 +14,6 @@ require('yargs').help(false);
 const { argv } = require('yargs');
 
 
-// const base64MinLen = "data:image/jpeg;base64,".length
-// const httpMinLen = "https://".length
 const Telegram = {
 	photo: {
 		get: async function (client, userList) {
@@ -55,11 +53,11 @@ const download = (url, dest, cb) => {
 
 	// check for request errors
 	sendReq.on('error', (err) => {
-		fs.unlink(dest, () => cb(err.message)); // delete the (partial) file and then return the error
+		fs.unlink(dest, () => cb(err)); // delete the (partial) file and then return the error
 	});
 
 	file.on('error', (err) => { // Handle errors
-		fs.unlink(dest, () => cb(err.message)); // delete the (partial) file and then return the error
+		fs.unlink(dest, () => cb(err)); // delete the (partial) file and then return the error
 	});
 };
 
@@ -101,8 +99,11 @@ async function main() {
 			return 0;
 		}
 		const phone = typeof argv._[0] === "string" ? argv._[0].replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : argv._[0] + "";
+		const pathToken = `${HOME}/.local/share/${prog}/.wwebjs_auth`;
+		const pathPhone = `${HOME}/${prog}/${phone}`;
+		// fs.mkdirSync(pathToken, { recursive: true });
 		if (argv.save !== false)
-			fs.mkdirSync(`${HOME}/${prog.toUpperCase()}${prog.slice(1)}/${phone}`, { recursive: true });
+			fs.mkdirSync(pathPhone, { recursive: true });
 
 		const format = (() => {
 			if (typeof argv.format === "string")
@@ -128,10 +129,12 @@ async function main() {
 		// 	return json;
 		// }
 
+		console.log(pathToken);
+
 		{
 			const user = await new Promise(resolve => {
 				const WhatsAppClient = new WhatsApp.Client({
-					authStrategy: new WhatsApp.LocalAuth({ dataPath: `${HOME}/.${prog}/.wwebjs_auth` }),
+					authStrategy: new WhatsApp.LocalAuth(),
 					puppeteer: {
 						headless: true,
 						args: [
@@ -187,18 +190,6 @@ async function main() {
   About:         ${colour("33")}${about || ""}${colour("0")}
   Last activity: ${typeof chat?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}
 `);
-					// 					dataText += `WhatsApp:
-					//   Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
-
-					//   Name:          ${user.name || ""}
-					//   Pushname:      ${user.pushname || ""}
-					//   Short name:    ${user.shortName || ""}
-
-					//   Picture:       ${picture || ""}
-					//   Phone:         ${number || ""}
-					//   About:         ${about || ""}
-					//   Last activity: ${typeof chat?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}
-					// `
 				}
 				else {
 					dataJson.whatsapp = {
@@ -212,8 +203,11 @@ async function main() {
 						lastActivity: chat?.timestamp === "number" ? new Date(chat.timestamp * 1000) : null
 					}
 				}
-				if (argv.save !== false && typeof picture === "string")
-					download(picture, `${phone}/whatsapp.${picture.split('?', 2)[0].split('.').pop()}`);
+				if (argv.save !== false && typeof picture === "string") {
+					const res = await new Promise(r => download(picture, `${pathPhone}/whatsapp.${picture.split('?', 2)[0].split('.').pop()}`, r));
+					if (res instanceof Error)
+						throw res;
+				}
 			}
 		}
 		const client = new TelegramClient(
@@ -290,7 +284,7 @@ ${pad}Phone:         ${colour("32")}${phoneNumber || ""}${colour("0")}
 ${pad}Language:      ${colour("32")}${langCode || ""}${colour("0")}
 ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}`);
 					if (argv.save !== false && Telegram.photo.isAvailable(photo))
-						fs.writeFileSync(`${phone}/telegram-${i}.jpg`, photo);
+						fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo);
 				}
 			}
 			else {
@@ -346,7 +340,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 		if (format === "json")
 			console.log(JSON.stringify(dataJson));
 		if (argv.save === true)
-			fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
+			fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
 
 		return 0;
 

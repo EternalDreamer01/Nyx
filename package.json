@@ -12,15 +12,12 @@
   "author": "Dimitri Simon",
   "license": "LGPL-3.0-or-later",
   "dependencies": {
-    "axios": "^1.9.0",
     "dotenv": "^16.5.0",
     "input": "^1.0.1",
-    "meetic-api": "^1.0.10",
-    "messaging-api-messenger": "^1.1.0",
     "qrcode-terminal": "^0.12.0",
     "request": "^2.88.2",
     "telegram": "^2.26.22",
-    "whatsapp-web.js": "^1.27.0",
+    "whatsapp-web.js": "1.27",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

@@ -33,7 +33,7 @@ ln -s $HOME/.local/share/nyx/nyx $HOME/.local/bin/
 
 ## Usage
 
-```node
+```
 $ nyx
                                         ..                      
                            u.    u.    @L             uL   ..   
