@@ -103,6 +103,8 @@ async function main() {
 		const pathPhone = `${HOME}/${prog}/${phone}`;
 		// fs.mkdirSync(pathToken, { recursive: true });
 		if (argv.save !== false)
+			argv.photo = true;
+		if (argv.save !== false || argv.photo)
 			fs.mkdirSync(pathPhone, { recursive: true });
 
 		const format = (() => {
@@ -203,7 +205,7 @@ async function main() {
 						lastActivity: chat?.timestamp === "number" ? new Date(chat.timestamp * 1000) : null
 					}
 				}
-				if (argv.save !== false && typeof picture === "string") {
+				if (argv.photo && typeof picture === "string") {
 					const res = await new Promise(r => download(picture, `${pathPhone}/whatsapp.${picture.split('?', 2)[0].split('.').pop()}`, r));
 					if (res instanceof Error)
 						throw res;
@@ -283,7 +285,7 @@ ${pad}Picture:       ${colour("35")}${Telegram.photo.isAvailable(photo) ? "Have"
 ${pad}Phone:         ${colour("32")}${phoneNumber || ""}${colour("0")}
 ${pad}Language:      ${colour("32")}${langCode || ""}${colour("0")}
 ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}`);
-					if (argv.save !== false && Telegram.photo.isAvailable(photo))
+					if (argv.photo && Telegram.photo.isAvailable(photo))
 						fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo);
 				}
 			}
