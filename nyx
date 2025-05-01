@@ -126,17 +126,13 @@ async function main() {
 			console.log(text);
 			dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
 		}
-		// const printJson = json => {
-		// console.log(json);
-		// 	return json;
-		// }
 
 		console.log(pathToken);
 
 		{
 			const user = await new Promise(resolve => {
 				const WhatsAppClient = new WhatsApp.Client({
-					authStrategy: new WhatsApp.LocalAuth(),
+					authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
 					puppeteer: {
 						headless: true,
 						args: [
@@ -345,36 +341,14 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 			fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
 
 		return 0;
-
-		// {
-		// 	const tg = await TelegramClient?.invoke(
-		// 		new TelegramApi.contacts.Search({
-		// 			q: req.params.name,
-		// 			limit: 1
-		// 		})
-		// 	);
-		// 	tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
-		// 	console.log(tg?.users?.filterObject(config.filter.telegram));
-		// } {
-		// 	const tg = await TelegramClient?.invoke(
-		// 		new TelegramApi.contacts.Search({
-		// 			q: req.params.name,
-		// 			limit: 400
-		// 		})
-		// 	);
-		// 	tg.users = await Telegram.getPhotos(TelegramClient, tg.users);
-		// 	console.log(tg?.users?.filterObject(config.filter.telegram));
-		// }
 	}
 	catch (e) {
 		console.error(e);
 		// if (argv.save === true)
 		// 	fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : dataJson);
 		return 1;
-		// process.exit(1)
 	}
 
-	// process.exit(0)
 }
 main()
 	.then(status => process.exit(status))
