@@ -84,6 +84,7 @@ ${colour("4")}Usage:${colour("0")} ${colour("36")}${prog}${colour("0")} ${colour
   ${colour("1")}phone${colour("0")}           International format     ./"                  
                                           ~\``
 
+var WhatsAppClient = null;
 async function main() {
 	try {
 		if (process.argv.length < 3 || argv._.length === 0 || argv.h || argv.help || argv["?"]) {
@@ -91,21 +92,23 @@ async function main() {
   -p --photo      Download photo
   -s --save       Save all user data (implies photo) into '${HOME}/${prog}'
   -f --format=FMT Define output format (default: ${colour("1")}${DEFAULT_INFO_FORMAT || "text"}${colour("0")})
- t                Available formats: 'text', 'json'
+                  Available formats: 'text', 'json'
   --no-colour     No colour (only usable in 'text' format for stdout)
 
-  -h  --help      Show this help
-`)
+  -h  --help      Show this help`)
 			return 0;
 		}
 		const phone = typeof argv._[0] === "string" ? argv._[0].replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : argv._[0] + "";
-		const pathToken = `${HOME}/.local/share/${prog}/.wwebjs_auth`;
+		const pathToken = `${HOME}/.local/share/${prog}/auth`;
+		const pathCache = `${HOME}/.local/share/${prog}/cache`;
 		const pathPhone = `${HOME}/${prog}/${phone}`;
 		// fs.mkdirSync(pathToken, { recursive: true });
-		if (argv.save !== false)
+		if (argv.s)
+			argv.save = true;
+		if (argv.save !== false || argv.p || argv.photo) {
 			argv.photo = true;
-		if (argv.save !== false || argv.photo)
 			fs.mkdirSync(pathPhone, { recursive: true });
+		}
 
 		const format = (() => {
 			if (typeof argv.format === "string")
@@ -114,7 +117,6 @@ async function main() {
 				return argv.f.toLowerCase();
 			return !DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "text" ? "text" : "json";
 		})();
-
 
 		const dataJson = {
 			whatsapp: undefined,
@@ -127,29 +129,36 @@ async function main() {
 			dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
 		}
 
-		console.log(pathToken);
+		// console.log(pathToken);
 
 		{
 			const user = await new Promise(resolve => {
-				const WhatsAppClient = new WhatsApp.Client({
+				WhatsAppClient = new WhatsApp.Client({
 					authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
 					puppeteer: {
-						headless: true,
+						// handleSIGINT: false,
+						// headless: true,
 						args: [
-							'--no-default-browser-check',
-							'--disable-session-crashed-bubble',
-							'--disable-dev-shm-usage',
-							'--no-sandbox',
-							'--disable-setuid-sandbox',
-							'--disable-accelerated-2d-canvas',
-							'--no-first-run',
+							"--no-sandbox",
+							"--disable-setuid-sandbox",
+							"--disable-extensions",
+							'--disable-gpu',
+							"--disable-accelerated-2d-canvas",
+							"--no-first-run",
+							"--no-zygote",
+							"--disable-dev-shm-usage"
 						],
-						takeoverOnConflict: true,
-					}
+						// takeoverOnConflict: true,
+					},
+					webVersionCache: {
+						type: "local",
+						localPath: pathCache
+					},
+					qrMaxRetries: 2
 				});
 
 				WhatsAppClient.on('qr', qr => {
-					console.log('Scan the following QR Code:');
+					console.log("To login to WhatsApp, scan the following QRCode within WhatsApp settings");
 					QRCcode.generate(qr, { small: true });
 				});
 				WhatsAppClient.on('authenticated', qr => {
@@ -207,64 +216,67 @@ async function main() {
 						throw res;
 				}
 			}
+			await WhatsAppClient.destroy();
+			WhatsAppClient = null;
 		}
-		const client = new TelegramClient(
-			new StringSession(API_TELEGRAM_TOKEN),
-			parseInt(API_TELEGRAM_ID),
-			API_TELEGRAM_HASH,
-			{
-				baseLogger: new TelegramLogger("warn")
+		{
+			const client = new TelegramClient(
+				new StringSession(API_TELEGRAM_TOKEN),
+				parseInt(API_TELEGRAM_ID),
+				API_TELEGRAM_HASH,
+				{
+					baseLogger: new TelegramLogger("error")
+				});
+
+			await client.start({
+				phoneNumber: async () => await input.text("Phone number:"),
+				password: async () => await input.text("Account password:"),
+				phoneCode: async () => await input.text("Received code:"),
+				onError: err => undefined /*console.error(err)*/,
 			});
+			if (!API_TELEGRAM_TOKEN) {
+				console.log("Telegram token:", client.session.save());
+				console.log("Make sure to save it safely");
+			}
+			await client.connect();
 
-		await client.start({
-			phoneNumber: async () => await input.text("Phone number:"),
-			password: async () => await input.text("Account password:"),
-			phoneCode: async () => await input.text("Received code:"),
-			onError: err => undefined /*console.error(err)*/,
-		});
-		if (!API_TELEGRAM_TOKEN) {
-			console.log("Telegram token:", client.session.save());
-			console.log("Make sure to save it safely");
-		}
-		await client.connect();
+			try {
+				const tg = await client?.invoke(
+					new TelegramApi.contacts.ResolvePhone({
+						phone
+					})
+				);
+				if (tg !== undefined)
+					tg.users = await Telegram.photo.get(client, tg.users);
 
-		try {
-			const tg = await client?.invoke(
-				new TelegramApi.contacts.ResolvePhone({
-					phone
-				})
-			);
-			if (tg !== undefined)
-				tg.users = await Telegram.photo.get(client, tg.users);
+				if (format === "text") {
+					printText(`${colour("1;4")}Telegram:${colour("0")}`);
+					const multipleAccount = tg.users.length !== 1;
+					const pad = multipleAccount ? "    " : "  ";
+					for (let i = 0; i < tg.users.length; ++i) {
+						const {
+							className,
+							id,
+							accessHash,
+							verified,
+							restricted,
+							premium,
+							storiesHidden,
+							botBusiness,
+							firstName,
+							lastName,
+							username,
+							phone: phoneNumber,
+							photo,
+							restrictionReason,
+							langCode,
+							status
+						} = tg.users[i];
+						const { wasOnline } = status || { wasOnline: null }
 
-			if (format === "text") {
-				printText(`${colour("1;4")}Telegram:${colour("0")}`);
-				const multipleAccount = tg.users.length !== 1;
-				const pad = multipleAccount ? "    " : "  ";
-				for (let i = 0; i < tg.users.length; ++i) {
-					const {
-						className,
-						id,
-						accessHash,
-						verified,
-						restricted,
-						premium,
-						storiesHidden,
-						botBusiness,
-						firstName,
-						lastName,
-						username,
-						phone: phoneNumber,
-						photo,
-						restrictionReason,
-						langCode,
-						status
-					} = tg.users[i];
-					const { wasOnline } = status || { wasOnline: null }
-
-					if (multipleAccount)
-						console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:${colour("0")}`)
-					printText(`${pad}Type:          ${className}
+						if (multipleAccount)
+							console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:${colour("0")}`)
+						printText(`${pad}Type:          ${className}
 ${pad}ID:            ${id}
 ${pad}Access Hash:   ${accessHash}
 ${pad}Bot Business:  ${botBusiness}
@@ -281,57 +293,58 @@ ${pad}Picture:       ${colour("35")}${Telegram.photo.isAvailable(photo) ? "Have"
 ${pad}Phone:         ${colour("32")}${phoneNumber || ""}${colour("0")}
 ${pad}Language:      ${colour("32")}${langCode || ""}${colour("0")}
 ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}`);
-					if (argv.photo && Telegram.photo.isAvailable(photo))
-						fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo);
+						if (argv.photo && Telegram.photo.isAvailable(photo))
+							fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo);
+					}
+				}
+				else {
+					dataJson.telegram = tg.users.map(user => {
+						const {
+							className,
+							id,
+							accessHash,
+							verified,
+							restricted,
+							premium,
+							storiesHidden,
+							botBusiness,
+							firstName,
+							lastName,
+							username,
+							phone: __phone,
+							photo,
+							restrictionReason,
+							langCode,
+							status
+						} = user;
+						const { wasOnline } = status || { wasOnline: null };
+						return {
+							className,
+							id: parseInt(id),
+							accessHash: parseInt(accessHash),
+							verified,
+							restricted,
+							premium,
+							storiesHidden,
+							botBusiness,
+							firstName,
+							lastName,
+							username,
+							phone: __phone,
+							photo: Telegram.photo.isAvailable(photo),
+							restrictionReason,
+							lang: langCode,
+							lastActivity: new Date(wasOnline * 1000)
+						};
+					})
 				}
 			}
-			else {
-				dataJson.telegram = tg.users.map(user => {
-					const {
-						className,
-						id,
-						accessHash,
-						verified,
-						restricted,
-						premium,
-						storiesHidden,
-						botBusiness,
-						firstName,
-						lastName,
-						username,
-						phone: __phone,
-						photo,
-						restrictionReason,
-						langCode,
-						status
-					} = user;
-					const { wasOnline } = status || { wasOnline: null };
-					return {
-						className,
-						id: parseInt(id),
-						accessHash: parseInt(accessHash),
-						verified,
-						restricted,
-						premium,
-						storiesHidden,
-						botBusiness,
-						firstName,
-						lastName,
-						username,
-						phone: __phone,
-						photo: Telegram.photo.isAvailable(photo),
-						restrictionReason,
-						lang: langCode,
-						lastActivity: new Date(wasOnline * 1000)
-					};
-				})
+			catch (e) {
+				if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
+					printText(`${colour("1;4")}Telegram:${colour("0")} ❌ Phone not occupied`);
+				else
+					console.error(e);
 			}
-		}
-		catch (e) {
-			if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
-				printText(`${colour("1;4")}Telegram:${colour("0")} ❌ Phone not occupied`);
-			else
-				console.error(e);
 		}
 
 		// console.log("${colour("1;32")}Done.${colour("0")}");
@@ -339,7 +352,6 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 			console.log(JSON.stringify(dataJson));
 		if (argv.save === true)
 			fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
-
 		return 0;
 	}
 	catch (e) {
@@ -348,8 +360,13 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 		// 	fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : dataJson);
 		return 1;
 	}
-
 }
+process.on("SIGINT", async () => {
+	// console.log("(SIGINT) Shutting down...");
+	await WhatsAppClient?.destroy();
+	process.exit(1);
+})
+
 main()
 	.then(status => process.exit(status))
 	.catch(() => process.exit(1))

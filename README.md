@@ -70,6 +70,9 @@ No
 ### Is it possible to login as another phone number but personal ?
 Yes, it's a common thing to buy a prepaid SIM card from tobacconists.
 
+### Can a user actually have WhatsApp or Telegram but doesn't appear ?
+Yes
+
 ## Disclaimer
 
 This project is intended for educational and lawful purposes only. The primary goal is to provide users with a platform to learn and experiment with various technologies, programming languages, and security concepts in a controlled environment. The creators and contributors of this project do not endorse or support any malicious activities, including but not limited to hacking, unauthorized access, or any form of cybercrime.
