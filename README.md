@@ -71,7 +71,7 @@ No
 Yes, it's a common thing to buy a prepaid SIM card from tobacconists.
 
 ### Can a user actually have WhatsApp or Telegram but doesn't appear ?
-Yes
+Yes, users can always change their profile visibility.
 
 ## Disclaimer
 
