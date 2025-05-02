@@ -68,6 +68,29 @@ const prog = process.argv[1].split(/\\|\//).pop();
 argv.colour = argv.colour !== false;
 const colour = (...args) => !argv.colour ? "" : "\x1b[" + args.join(";") + "m";
 
+const typeColour = v => {
+	if(!argv.colour)
+		return "";
+	switch(typeof v) {
+		case "boolean":
+			return `\x1b[${v === true ? "32" : "31"}m`;
+		case "number":
+		case "bigint":
+			return "\x1b[36m";
+		case "string":
+			if(v.startsWith("+"))
+				return "\x1b[32m";
+			else if(/^\d+$/.test(v))
+				return "\x1b[36m";
+			return "\x1b[33m";
+		default:
+			return "";
+	}
+}
+
+const NAME_COLOUR = "34";
+const USERNAME_COLOUR = "35";
+
 // http://patorjk.com/software/taag/#p=display&f=Fraktur&t=nyx
 const logo = `                                        ..                      
                            u.    u.    @L             uL   ..   
@@ -188,14 +211,14 @@ async function main() {
 					printText(`${colour("1;4")}WhatsApp:${colour("0")}
   Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
 
-  Name:          ${colour("36")}${user.name || ""}${colour("0")}
-  Pushname:      ${colour("36")}${user.pushname || ""}${colour("0")}
-  Short name:    ${colour("36")}${user.shortName || ""}${colour("0")}
+  Name:          ${colour(NAME_COLOUR)}${user.name || ""}${colour("0")}
+  Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}${colour("0")}
+  Short name:    ${colour(NAME_COLOUR)}${user.shortName || ""}${colour("0")}
 
   Picture:       ${picture || ""}
-  Phone:         ${colour("32")}${number || ""}${colour("0")}
+  Phone:         ${typeColour(number)}${number || ""}${colour("0")}
   About:         ${colour("33")}${about || ""}${colour("0")}
-  Last activity: ${typeof chat?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}
+  Last activity: ${typeof chat?.timestamp === "number" ? typeColour(chat.timestamp) + new Date(chat.timestamp * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}
 `);
 				}
 				else {
@@ -272,25 +295,25 @@ async function main() {
 							langCode,
 							status
 						} = tg.users[i];
-						const { wasOnline } = status || { wasOnline: null }
+						const { wasOnline } = status || { wasOnline: null };
 
 						if (multipleAccount)
 							console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:${colour("0")}`)
 						printText(`${pad}Type:          ${className}
-${pad}ID:            ${id}
-${pad}Access Hash:   ${accessHash}
-${pad}Bot Business:  ${botBusiness}
-${pad}Restricted:    ${restricted}
+${pad}ID:            ${typeColour(id)}${id}${colour("0")}
+${pad}Access Hash:   ${typeColour(accessHash)}${accessHash}${colour("0")}
+${pad}Bot Business:  ${typeColour(botBusiness)}${botBusiness}${colour("0")}
+${pad}Restricted:    ${typeColour(restricted)}${restricted}${colour("0")}
 ${pad}Restriction Reason: ${restrictionReason || ""}
-	
-${pad}First name:    ${colour("34")}${firstName || ""}${colour("0")}
-${pad}Last name:     ${colour("34")}${lastName || ""}${colour("0")}
-${pad}Username:      ${colour("36")}${username || ""}${colour("0")}
 
-${pad}Verified:      ${colour("35")}${verified}${colour("0")}
-${pad}Premium:       ${colour("35")}${premium}${colour("0")}
-${pad}Picture:       ${colour("35")}${Telegram.photo.isAvailable(photo) ? "Have" : "Do not have"}${colour("0")}
-${pad}Phone:         ${colour("32")}${phoneNumber || ""}${colour("0")}
+${pad}First name:    ${colour(NAME_COLOUR)}${firstName || ""}${colour("0")}
+${pad}Last name:     ${colour(NAME_COLOUR)}${lastName || ""}${colour("0")}
+${pad}Username:      ${colour(USERNAME_COLOUR)}${username || ""}${colour("0")}
+
+${pad}Verified:      ${typeColour(verified)}${verified}${colour("0")}
+${pad}Premium:       ${typeColour(premium)}${premium}${colour("0")}
+${pad}Picture:       ${typeColour(Telegram.photo.isAvailable(photo))}${Telegram.photo.isAvailable(photo) ? "Have" : "Do not have"}${colour("0")}
+${pad}Phone:         ${typeColour(phoneNumber)}${phoneNumber || ""}${colour("0")}
 ${pad}Language:      ${colour("32")}${langCode || ""}${colour("0")}
 ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}`);
 						if (argv.photo && Telegram.photo.isAvailable(photo))
