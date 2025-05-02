@@ -76,6 +76,7 @@ const typeColour = v => {
 			return `\x1b[${v === true ? "32" : "31"}m`;
 		case "number":
 		case "bigint":
+		case "object":
 			return "\x1b[36m";
 		case "string":
 			if(v.startsWith("+"))
@@ -205,6 +206,8 @@ async function main() {
 					user.getAbout(),
 					user.getChat()
 				]);
+				// console.log(user);
+
 				if (!user.name && !user.pushname && !user.shortName && !picture && !about && typeof chat?.timestamp !== "number")
 					printText(`${colour("1;4")}WhatsApp:${colour("0")} ❌ Phone not occupied`);
 				else if (format === "text") {
@@ -297,6 +300,7 @@ async function main() {
 						} = tg.users[i];
 						const { wasOnline } = status || { wasOnline: null };
 
+					// console.log(id, typeof id, accessHash, typeof accessHash);
 						if (multipleAccount)
 							console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:${colour("0")}`)
 						printText(`${pad}Type:          ${className}
