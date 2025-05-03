@@ -61,7 +61,7 @@ const download = (url, dest, cb) => {
 	});
 };
 
-const { API_TELEGRAM_TOKEN, API_TELEGRAM_ID, API_TELEGRAM_HASH, DEFAULT_INFO_FORMAT, HOME } = process.env;
+const { API_TELEGRAM_TOKEN, API_TELEGRAM_ID, API_TELEGRAM_HASH, DEFAULT_INFO_FORMAT, HOME, SAVE } = process.env;
 
 const prog = process.argv[1].split(/\\|\//).pop();
 
@@ -113,11 +113,11 @@ async function main() {
 	try {
 		if (process.argv.length < 3 || argv._.length === 0 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
-  -p --photo      Download photo
-  -s --save       Save all user data (implies photo) into '${HOME}/${prog}'
-  -f --format=FMT Define output format (default: ${colour("1")}${DEFAULT_INFO_FORMAT || "text"}\x1b[0m)
-                  Available formats: 'text', 'json'
-  --no-colour     No colour (only usable in 'text' format for stdout)
+  -p --photo        Download photo
+  -s --[no-]save    Save all user data (implies photo) into '${HOME}/${prog} (default: \x1b[1m${/^true|yes$/i.test(SAVE) ? "yes" : "no"})'
+  -f --format=FMT   Define output format (default: \x1b[1m$${DEFAULT_INFO_FORMAT || "text"}\x1b[0m)
+                    Available formats: 'text', 'json'
+  -c --[no-]colour  No colour (only usable in 'text' format for stdout)
 
   -h  --help      Show this help`)
 			return 0;
@@ -127,8 +127,12 @@ async function main() {
 		const pathCache = `${HOME}/.local/share/${prog}/cache`;
 		const pathPhone = `${HOME}/${prog}/${phone}`;
 		// fs.mkdirSync(pathToken, { recursive: true });
+
 		if (argv.s)
 			argv.save = true;
+		else if(argv.save === undefined)
+			argv.save = /^true|yes$/i.test(SAVE);
+		
 		if (argv.save !== false || argv.p || argv.photo) {
 			argv.photo = true;
 			fs.mkdirSync(pathPhone, { recursive: true });
