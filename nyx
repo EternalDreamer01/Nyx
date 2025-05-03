@@ -103,9 +103,9 @@ const logo = `                                        ..
                           8888  888R    888E  888I  .u./"888&   
                          "*88*" 8888"  x888N><888' d888" Y888*" 
                            ""   'Y"     "88"  888  \` "Y   Y"    
-${colour("4")}Usage:${colour("0")} ${colour("36")}${prog}${colour("0")} ${colour("1")}phone${colour("0")}                              88F               
+${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1b[0m                              88F               
                                              98"                
-  ${colour("1")}phone${colour("0")}           International format     ./"                  
+  ${colour("1")}phone\x1b[0m           International format     ./"                  
                                           ~\``
 
 var WhatsAppClient = null;
@@ -115,7 +115,7 @@ async function main() {
 			console.log(`${logo}
   -p --photo      Download photo
   -s --save       Save all user data (implies photo) into '${HOME}/${prog}'
-  -f --format=FMT Define output format (default: ${colour("1")}${DEFAULT_INFO_FORMAT || "text"}${colour("0")})
+  -f --format=FMT Define output format (default: ${colour("1")}${DEFAULT_INFO_FORMAT || "text"}\x1b[0m)
                   Available formats: 'text', 'json'
   --no-colour     No colour (only usable in 'text' format for stdout)
 
@@ -209,19 +209,19 @@ async function main() {
 				// console.log(user);
 
 				if (!user.name && !user.pushname && !user.shortName && !picture && !about && typeof chat?.timestamp !== "number")
-					printText(`${colour("1;4")}WhatsApp:${colour("0")} ❌ Phone not occupied`);
+					printText(`${colour("1;4")}WhatsApp:\x1b[0m ❌ Phone not occupied`);
 				else if (format === "text") {
-					printText(`${colour("1;4")}WhatsApp:${colour("0")}
+					printText(`${colour("1;4")}WhatsApp:\x1b[0m
   Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
 
-  Name:          ${colour(NAME_COLOUR)}${user.name || ""}${colour("0")}
-  Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}${colour("0")}
-  Short name:    ${colour(NAME_COLOUR)}${user.shortName || ""}${colour("0")}
+  Name:          ${colour(NAME_COLOUR)}${user.name || ""}\x1b[0m
+  Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
+  Short name:    ${colour(NAME_COLOUR)}${user.shortName || ""}\x1b[0m
 
   Picture:       ${picture || ""}
-  Phone:         ${typeColour(number)}${number || ""}${colour("0")}
-  About:         ${colour("33")}${about || ""}${colour("0")}
-  Last activity: ${typeof chat?.timestamp === "number" ? typeColour(chat.timestamp) + new Date(chat.timestamp * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}
+  Phone:         ${typeColour(number)}${number || ""}\x1b[0m
+  About:         ${colour("33")}${about || ""}\x1b[0m
+  Last activity: ${typeof chat?.timestamp === "number" ? typeColour(chat.timestamp) + new Date(chat.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
 `);
 				}
 				else {
@@ -276,7 +276,7 @@ async function main() {
 					tg.users = await Telegram.photo.get(client, tg.users);
 
 				if (format === "text") {
-					printText(`${colour("1;4")}Telegram:${colour("0")}`);
+					printText(`${colour("1;4")}Telegram:\x1b[0m`);
 					const multipleAccount = tg.users.length !== 1;
 					const pad = multipleAccount ? "    " : "  ";
 					for (let i = 0; i < tg.users.length; ++i) {
@@ -302,24 +302,24 @@ async function main() {
 
 					// console.log(id, typeof id, accessHash, typeof accessHash);
 						if (multipleAccount)
-							console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:${colour("0")}`)
+							console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:\x1b[0m`)
 						printText(`${pad}Type:          ${className}
-${pad}ID:            ${typeColour(id)}${id}${colour("0")}
-${pad}Access Hash:   ${typeColour(accessHash)}${accessHash}${colour("0")}
-${pad}Bot Business:  ${typeColour(botBusiness)}${botBusiness}${colour("0")}
-${pad}Restricted:    ${typeColour(restricted)}${restricted}${colour("0")}
+${pad}ID:            ${typeColour(id)}${id}\x1b[0m
+${pad}Access Hash:   ${typeColour(accessHash)}${accessHash}\x1b[0m
+${pad}Bot Business:  ${typeColour(botBusiness)}${botBusiness}\x1b[0m
+${pad}Restricted:    ${typeColour(restricted)}${restricted}\x1b[0m
 ${pad}Restriction Reason: ${restrictionReason || ""}
 
-${pad}First name:    ${colour(NAME_COLOUR)}${firstName || ""}${colour("0")}
-${pad}Last name:     ${colour(NAME_COLOUR)}${lastName || ""}${colour("0")}
-${pad}Username:      ${colour(USERNAME_COLOUR)}${username || ""}${colour("0")}
+${pad}First name:    ${colour(NAME_COLOUR)}${firstName || ""}\x1b[0m
+${pad}Last name:     ${colour(NAME_COLOUR)}${lastName || ""}\x1b[0m
+${pad}Username:      ${colour(USERNAME_COLOUR)}${username || ""}\x1b[0m
 
-${pad}Verified:      ${typeColour(verified)}${verified}${colour("0")}
-${pad}Premium:       ${typeColour(premium)}${premium}${colour("0")}
-${pad}Picture:       ${typeColour(Telegram.photo.isAvailable(photo))}${Telegram.photo.isAvailable(photo) ? "Have" : "Do not have"}${colour("0")}
-${pad}Phone:         ${typeColour(phoneNumber)}${phoneNumber || ""}${colour("0")}
-${pad}Language:      ${colour("32")}${langCode || ""}${colour("0")}
-${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) + colour("0") : colour("3") + "Unknown" + colour("0")}`);
+${pad}Verified:      ${typeColour(verified)}${verified}\x1b[0m
+${pad}Premium:       ${typeColour(premium)}${premium}\x1b[0m
+${pad}Picture:       ${typeColour(Telegram.photo.isAvailable(photo))}${Telegram.photo.isAvailable(photo) ? "Have" : "Do not have"}\x1b[0m
+${pad}Phone:         ${typeColour(phoneNumber)}${phoneNumber || ""}\x1b[0m
+${pad}Language:      ${colour("32")}${langCode || ""}\x1b[0m
+${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000): "\x1b[3mUnknown"}\x1b[0m`);
 						if (argv.photo && Telegram.photo.isAvailable(photo))
 							fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo);
 					}
@@ -368,13 +368,13 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 			}
 			catch (e) {
 				if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
-					printText(`${colour("1;4")}Telegram:${colour("0")} ❌ Phone not occupied`);
+					printText(`${colour("1;4")}Telegram:\x1b[0m ❌ Phone not occupied`);
 				else
 					console.error(e);
 			}
 		}
 
-		// console.log("${colour("1;32")}Done.${colour("0")}");
+		// console.log("${colour("1;32")}Done.\x1b[0m");
 		if (format === "json")
 			console.log(JSON.stringify(dataJson));
 		if (argv.save === true)
