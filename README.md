@@ -25,7 +25,7 @@ ln -s $HOME/.local/share/nyx/nyx $HOME/.local/bin/
 
 ### Access
 
-***These variables shall be configured within your .env*** (create one at root if you don't have one)
+***Tokens shall be configured within your .env***. Rename `.env.txt` to `.env`.
 
 | Application | Access functioning |
 |-|-|
