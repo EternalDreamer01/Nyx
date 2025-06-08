@@ -124,9 +124,7 @@ async function main() {
 		}
 		const phone = typeof argv._[0] === "string" ? argv._[0].replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : argv._[0] + "";
 		const pathToken = `${HOME}/.local/share/${prog}/auth`;
-		const pathCache = `${HOME}/.local/share/${prog}/cache`;
 		const pathPhone = `${HOME}/${prog}/${phone}`;
-		// fs.mkdirSync(pathToken, { recursive: true });
 
 		if (argv.s)
 			argv.save = true;

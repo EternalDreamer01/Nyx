@@ -1,17 +1,18 @@
-# Nyx
+# Nyx 🌙
 
 ## Overview
 
-Nyx is a simple information gathering tool for phone numbers based on [whatsapp-web.js](https://docs.wwebjs.dev/) .
-
+Nyx is a simple reverse phone number lookup.
 
 ## Inspected application
 
 - [x] WhatsApp
 - [x] Telegram
-- [ ] ~~Messenger~~
+- [ ] ~~Messenger~~ 
 - [ ] ~~WeChat~~
 - [ ] ~~Kakao Talk~~
+
+*~~Striked names~~ mean no reverse phone lookup available*
 
 ## Install
 
@@ -68,7 +69,7 @@ $ nyx "+44 0000 000000"
 No
 
 ### Is it possible to login as another phone number but personal ?
-Yes, it's a common thing to buy a prepaid SIM card from tobacconists.
+Yes, it's a common thing to buy a prepaid SIM card from tobacconists or local stores.
 
 ### Can a user actually have WhatsApp or Telegram but doesn't appear ?
 Yes, users can always change their profile visibility.
