@@ -223,7 +223,7 @@ async function main() {
   Picture:       ${picture || ""}
   Phone:         ${typeColour(number)}${number || ""}\x1b[0m
   About:         ${colour("33")}${about || ""}\x1b[0m
-  Last activity: ${typeof chat?.timestamp === "number" ? typeColour(chat.timestamp) + new Date(chat.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
+  Last activity: ${typeof chat?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
 `);
 				}
 				else {
