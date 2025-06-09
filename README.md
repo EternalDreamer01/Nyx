@@ -63,6 +63,27 @@ Usage: nyx phone                              88F
 $ nyx "+44 0000 000000"
 ```
 
+## Informations
+
+* WhatsApp
+	* Type (User/Business)
+	* Name
+	* Picture
+	* About
+	* Last activity
+* Telegram
+	* Type (User/Business)
+	* ID
+	* Bot
+	* Restriction
+	* First/last name
+	* Username
+	* Verified
+	* Premium
+	* Picture
+	* Language
+	* Last activity
+
 ## FAQ
 
 ### Is the user notified about this ?
@@ -72,7 +93,9 @@ No
 Yes, it's a common thing to buy a prepaid SIM card from tobacconists or local stores.
 
 ### Can a user actually have WhatsApp or Telegram but doesn't appear ?
-Yes, users can always change their profile visibility.
+Yes, users can always change their profile visibility. To view or edit these settings :
+* WhatsApp : Settings > Privacy
+* Telegram : Settings > Privacy and Security
 
 ## Disclaimer
 
