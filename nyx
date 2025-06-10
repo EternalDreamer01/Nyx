@@ -134,12 +134,9 @@ async function main() {
 
   -h  --help        Show this help
   
-    WhatsApp session saved under ${pathToken}
-    Telegram token saved in .env file as API_TELEGRAM_TOKEN
-
-    \x1b[4mWhatsApp:\x1b[0m ${fs.existsSync(pathToken) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}
-    \x1b[4mTelegram:\x1b[0m ${/^[-A-Za-z0-9+/]*={0,3}$/.test(API_TELEGRAM_TOKEN) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}
-`)
+  \x1b[4mStatus:\x1b[0m
+    WhatsApp: ${fs.existsSync(pathToken) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}
+    Telegram: ${/^[-A-Za-z0-9+/]*={0,3}$/.test(API_TELEGRAM_TOKEN) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}`)
 			return 0;
 		}
 		else if (argv.e || argv.env) {

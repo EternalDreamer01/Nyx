@@ -32,6 +32,10 @@ ln -s $HOME/.local/share/nyx/nyx $HOME/.local/bin/
 | WhatsApp | QR code |
 | Telegram | [**API Token**](https://my.telegram.org/apps) |
 
+Once connected, your session will be saved under:
+- Directory `~/.local/share/nyx/auth` for WhatsApp
+- Env variable `API_TELEGRAM_TOKEN` for Telegram
+
 ## Usage
 
 ```
@@ -48,19 +52,25 @@ $ nyx
                            ""   'Y"     "88"  888  ` "Y   Y"    
 Usage: nyx phone                              88F               
                                              98"                
-  phone           International format     ./"                  
+  phone             International format   ./"                  
                                           ~`
-  -p --photo      Download photo
-  -s --save       Save all user data (implies photo) into '/home/<user>/nyx'
-  -f --format=FMT Define output format (default: text)
-                  Available formats: 'text', 'json'
-  --no-colour     No colour (only usable in 'text' format for stdout)
+  -p --photo        Download photo
+  -s --[no-]save    Save all user data (implies photo) into '/home/<user>/nyx' (autosave: yes)
+  -f --format=FMT   Define output format (default: text)
+                    Available formats: 'text', 'json'
+  -c --[no-]colour  No colour (only usable in 'text' format for stdout)
+  -e --env          Edit env file (default editor: vim)
+     --clean        Clean up sessions (simple unlink/edit)
 
-  -h  --help      Show this help
+  -h  --help        Show this help
+  
+  Status:
+    WhatsApp: ✔
+    Telegram: ✔
+ 
 ```
-
 ```sh
-$ nyx "+44 0000 000000"
+$ nyx "+41 0000 000000"
 ```
 
 ## Informations
