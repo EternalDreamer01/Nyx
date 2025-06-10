@@ -25,7 +25,7 @@ ln -s $HOME/.local/share/nyx/nyx $HOME/.local/bin/
 
 ### Access
 
-***Tokens shall be configured within your .env***. Rename `.env.txt` to `.env`.
+***Telegram should be configured in your environment***. Run `nyx -e` to edit
 
 | Application | Access functioning |
 |-|-|
