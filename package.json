@@ -1,26 +1,38 @@
 {
-  "name": "nyx",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "commonjs",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Dimitri Simon",
-  "license": "LGPL-3.0-or-later",
-  "dependencies": {
-    "dotenv": "^16.5.0",
-    "input": "^1.0.1",
-    "qrcode-terminal": "^0.12.0",
-    "request": "^2.88.2",
-    "telegram": "^2.26.22",
-    "whatsapp-web.js": "1.26",
-    "yargs": "^17.7.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.10"
-  }
+	"name": "nyx-lookup",
+	"version": "1.0.5",
+	"description": "",
+	"main": "./index.js",
+	"type": "commonjs",
+	"bin": "./index.js",
+	"files": [
+		".env.txt"
+	],
+	"scripts": {
+		"start": "node index.js",
+		"dev": "nodemon index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Dimitri Simon",
+	"license": "LGPL-3.0-or-later",
+	"dependencies": {
+		"dotenv": "^16.5.0",
+		"input": "^1.0.1",
+		"qrcode-terminal": "^0.12.0",
+		"request": "^2.88.2",
+		"telegram": "^2.26.22",
+		"whatsapp-web.js": "1.26",
+		"yargs": "^17.7.2"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/MikeCod/Nyx.git"
+	},
+	"keywords": [
+		"reverse-phone-lookup",
+		"osint",
+		"phone",
+		"phone-number",
+		"phone-verification"
+	]
 }

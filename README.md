@@ -4,42 +4,29 @@
 
 Nyx is a simple reverse phone number lookup.
 
-## Inspected application
+## Setup Inspected Applications
 
-- [x] WhatsApp
-- [x] Telegram
-- [ ] ~~Messenger~~ 
-- [ ] ~~WeChat~~
-- [ ] ~~Kakao Talk~~
+| API | Information | Access | Session location |
+|-|-|-|-|
+| WhatsApp | <ul><li>Type (User/Business)</li><li>Name</li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%AppData%`</td></tr><tr><td>Linux</td><td>`~/.local/share`</td></tr><tr><td>macOS</td><td>`~/Library/Preferences`</td></tr></tbody></table> |
+| Telegram | <ul><li>Type (User/Business)</li><li>ID</li><li>Bot</li><li>Restriction</li><li>First/last name</li><li>Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
+| ~~Signal~~ |
+| ~~Messenger~~ |
+| ~~WeChat~~ |
+| ~~Kakao Talk~~ |
 
 *~~Striked names~~ mean no reverse phone lookup available*
 
 ## Install
 
 ```sh
-git clone https://github.com/MikeCod/Nyx.git $HOME/.local/share/nyx
-cd $HOME/.local/share/nyx
-npm i
-ln -s $HOME/.local/share/nyx/nyx $HOME/.local/bin/
+npm i -g nyx-lookup
 ```
-
-### Access
-
-***Telegram should be configured in your environment***. Run `nyx -e` to edit
-
-| Application | Access functioning |
-|-|-|
-| WhatsApp | QR code |
-| Telegram | [**API Token**](https://my.telegram.org/apps) |
-
-Once connected, your session will be saved under:
-- Directory `~/.local/share/nyx/auth` for WhatsApp
-- Env variable `API_TELEGRAM_TOKEN` for Telegram
 
 ## Usage
 
 ```
-$ nyx
+$ nyx-lookup
                                         ..                      
                            u.    u.    @L             uL   ..   
                          x@88k u@88c. 9888i   .dL   .@88b  @88R 
@@ -50,12 +37,12 @@ $ nyx
                           8888  888R    888E  888I  .u./"888&   
                          "*88*" 8888"  x888N><888' d888" Y888*" 
                            ""   'Y"     "88"  888  ` "Y   Y"    
-Usage: nyx phone                              88F               
+Usage: nyx-lookup phone                       88F               
                                              98"                
   phone             International format   ./"                  
                                           ~`
   -p --photo        Download photo
-  -s --[no-]save    Save all user data (implies photo) into '/home/<user>/nyx' (autosave: yes)
+  -s --[no-]save    Save all user data (implies photo) into '/home/<user>/nyx-lookup' (autosave: yes)
   -f --format=FMT   Define output format (default: text)
                     Available formats: 'text', 'json'
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
@@ -70,29 +57,8 @@ Usage: nyx phone                              88F
  
 ```
 ```sh
-$ nyx "+41 0000 000000"
+$ nyx-lookup "+41 0000 000000"
 ```
-
-## Informations
-
-* WhatsApp
-	* Type (User/Business)
-	* Name
-	* Picture
-	* About
-	* Last activity
-* Telegram
-	* Type (User/Business)
-	* ID
-	* Bot
-	* Restriction
-	* First/last name
-	* Username
-	* Verified
-	* Premium
-	* Picture
-	* Language
-	* Last activity
 
 ## FAQ
 
@@ -116,6 +82,16 @@ Users are expected to use this project responsibly and in compliance with applic
 It is essential to respect the privacy and security of others and obtain explicit permission before attempting to access or modify any system or data. Any actions performed with the knowledge gained from this project should be conducted in an ethical manner, with a focus on enhancing cybersecurity awareness and promoting responsible use of technology.
 
 By using this project, you acknowledge and agree to abide by the principles outlined in this disclaimer. If you do not agree with these terms, you are not authorized to use or contribute to this project.
+
+## TODO
+
+- OS Support
+	- Windows
+	- MacOS
+	- FreeBSD
+- Prevent Blacklist
+	- Latency between each call (prevent blacklist)
+	- Define limit, warn after numerous calls
 
 ## Contributing
 

@@ -106,7 +106,7 @@ const logo = `                                        ..
                           8888  888R    888E  888I  .u./"888&   
                          "*88*" 8888"  x888N><888' d888" Y888*" 
                            ""   'Y"     "88"  888  \` "Y   Y"    
-${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1b[0m                              88F               
+${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1b[0m                       88F               
                                              98"                
   ${colour("1")}phone\x1b[0m             International format   ./"                  
                                           ~\``
