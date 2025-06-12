@@ -5,7 +5,8 @@
 	"main": "./index.js",
 	"type": "commonjs",
 	"bin": {
-		"nyx-lookup": "index.js"
+		"nyx-lookup": "index.js",
+		"nyxl": "index.js"
 	},
 	"files": [
 		".env.txt"

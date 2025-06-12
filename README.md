@@ -8,8 +8,8 @@ Nyx is a simple reverse phone number lookup.
 
 | API | Information | Access | Session location |
 |-|-|-|-|
-| WhatsApp | <ul><li>Type (User/Business)</li><li>Name</li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%AppData%`</td></tr><tr><td>Linux</td><td>`~/.local/share`</td></tr><tr><td>macOS</td><td>`~/Library/Preferences`</td></tr></tbody></table> |
-| Telegram | <ul><li>Type (User/Business)</li><li>ID</li><li>Bot</li><li>Restriction</li><li>First/last name</li><li>Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
+| WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / push name / Short name](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%AppData%`</td></tr><tr><td>Linux</td><td>`~/.local/share`</td></tr><tr><td>macOS</td><td>`~/Library/Preferences`</td></tr></tbody></table> |
+| Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
 | ~~Signal~~ |
 | ~~Messenger~~ |
 | ~~WeChat~~ |
@@ -73,6 +73,13 @@ Yes, users can always change their profile visibility. To view or edit these set
 * WhatsApp : Settings > Privacy
 * Telegram : Settings > Privacy and Security
 
+### What's the difference between "name", "pushname" and "shortname" ?
+|||
+|-|-|
+| `name` | The name registered for this phone number on your personal WhatsApp account |
+| `shortname` | Your prefered shortname configured on your device (first name or last name), when this phone number is registered on your WhatsApp account |
+| `pushname` | The name configured on their WhatsApp |
+
 ## Disclaimer
 
 This project is intended for educational and lawful purposes only. The primary goal is to provide users with a platform to learn and experiment with various technologies, programming languages, and security concepts in a controlled environment. The creators and contributors of this project do not endorse or support any malicious activities, including but not limited to hacking, unauthorized access, or any form of cybercrime.
@@ -92,6 +99,8 @@ By using this project, you acknowledge and agree to abide by the principles outl
 - Prevent Blacklist
 	- Latency between each call (prevent blacklist)
 	- Define limit, warn after numerous calls
+- Perf
+	- Show other WhatsApp's defined fields (labels, sectionHeader,verified)
 
 ## Contributing
 

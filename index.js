@@ -242,6 +242,7 @@ async function main() {
 						user.getChat()
 					]);
 					// console.log(user);
+					// return 0;
 
 					if (!user.name && !user.pushname && !user.shortName && !picture && !about && typeof chat?.timestamp !== "number")
 						printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m Phone not occupied`);
@@ -250,8 +251,8 @@ async function main() {
   Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
 
   Name:          ${colour(NAME_COLOUR)}${user.name || ""}\x1b[0m
+  Shortname:    ${colour(NAME_COLOUR)}${user.shortName || ""}\x1b[0m
   Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
-  Short name:    ${colour(NAME_COLOUR)}${user.shortName || ""}\x1b[0m
 
   Picture:       ${picture || ""}
   Phone:         ${typeColour(number)}${number || ""}\x1b[0m
@@ -263,8 +264,8 @@ async function main() {
 						dataJson.whatsapp = {
 							type: user.isBusiness ? "Business" : user.isUser ? "User" : null,
 							name: user.name || "",
-							pushname: user.pushname || "",
 							shortname: user.shortName || "",
+							pushname: user.pushname || "",
 							picture: picture || "",
 							phone: number || "",
 							about: about || "",
@@ -326,8 +327,6 @@ async function main() {
 						for (let i = 0; i < tg.users.length; ++i) {
 							const {
 								className,
-								id,
-								accessHash,
 								verified,
 								restricted,
 								premium,
