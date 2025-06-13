@@ -111,12 +111,6 @@ ${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1
   ${colour("1")}phone\x1b[0m             International format   ./"                  
                                           ~\``
 
-var WhatsAppClient = null;
-// const spinner = ora({
-// 	color: "yellow",
-// });
-
-
 async function main() {
 	try {
 		const pathToken = `${HOME}/.local/share/${prog}/auth`;
@@ -189,8 +183,8 @@ async function main() {
 			// console.log(pathToken);
 
 			{
-				const user = await new Promise(resolve => {
-					WhatsAppClient = new WhatsApp.Client({
+				const client = await new Promise(resolve => {
+					const waclient = new WhatsApp.Client({
 						authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
 						puppeteer: {
 							// handleSIGINT: false,
@@ -214,26 +208,19 @@ async function main() {
 						qrMaxRetries: 2
 					});
 
-					WhatsAppClient.on('qr', qr => {
+					waclient.on('qr', qr => {
 						console.log("To login to WhatsApp, scan the following QRCode within WhatsApp settings");
 						QRCcode.generate(qr, { small: true });
 					});
-					WhatsAppClient.on('authenticated', qr => {
+					waclient.on('authenticated', qr => {
 						// console.log("Authenticated");
 					});
-					WhatsAppClient.on('ready', async () => {
-						try {
-							// spinner.text = "Looking on WhatsApp";
-							// spinner.start();
-							resolve(await WhatsAppClient.getContactById(phone + "@c.us"));
-						}
-						catch (e) {
-							console.error(e);
-							resolve(null);
-						}
+					waclient.on('ready', async () => {
+						resolve(waclient);
 					});
-					WhatsAppClient.initialize();
-				})
+					waclient.initialize();
+				});
+				const user = await client.getContactById(phone + "@c.us");
 				if (user !== null) {
 					const [picture, number, about, chat] = await Promise.all([
 						user.getProfilePicUrl(),
@@ -248,10 +235,10 @@ async function main() {
 						printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m Phone not occupied`);
 					else if (format === "text") {
 						printText(`\r${colour("1;4")}WhatsApp:\x1b[0m
-  Type:          ${user.isBusiness ? "Business" : user.isUser ? "User" : "Unknown"}
+  Type:          ${user.isBusiness ? "Business" : (user.isEnterprise ? "Enterprise" : (user.isUser ? "User" : "Unknown"))}
 
   Name:          ${colour(NAME_COLOUR)}${user.name || ""}\x1b[0m
-  Shortname:    ${colour(NAME_COLOUR)}${user.shortName || ""}\x1b[0m
+  Shortname:     ${colour(NAME_COLOUR)}${user.shortName || ""}\x1b[0m
   Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
 
   Picture:       ${picture || ""}
@@ -278,8 +265,7 @@ async function main() {
 							throw res;
 					}
 				}
-				await WhatsAppClient.destroy();
-				WhatsAppClient = null;
+				await client.destroy();
 				// spinner.succeed("");
 			}
 			{
@@ -347,8 +333,6 @@ async function main() {
 							if (multipleAccount)
 								console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:\x1b[0m`)
 							printText(`${pad}Type:          ${className}
-${pad}ID:            ${typeColour(id)}${id}\x1b[0m
-${pad}Access Hash:   ${typeColour(accessHash)}${accessHash}\x1b[0m
 ${pad}Bot Business:  ${typeColour(botBusiness)}${botBusiness}\x1b[0m
 ${pad}Restricted:    ${typeColour(restricted)}${restricted}\x1b[0m
 ${pad}Restriction Reason: ${restrictionReason || ""}
@@ -371,8 +355,6 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 						dataJson.telegram = tg.users.map(user => {
 							const {
 								className,
-								id,
-								accessHash,
 								verified,
 								restricted,
 								premium,
@@ -390,8 +372,6 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 							const { wasOnline } = status || { wasOnline: null };
 							return {
 								className,
-								id: parseInt(id),
-								accessHash: parseInt(accessHash),
 								verified,
 								restricted,
 								premium,
@@ -434,11 +414,6 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 		return 1;
 	}
 }
-process.on("SIGINT", async () => {
-	// console.log("(SIGINT) Shutting down...");
-	await WhatsAppClient?.destroy();
-	process.exit(1);
-})
 
 main()
 	.then(status => process.exit(status))
