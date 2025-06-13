@@ -31,7 +31,6 @@ const Telegram = {
 				return buf.byteLength !== 0;
 			else if (typeof buf === "string")
 				return buf.length !== 0;
-
 			return false;
 		}
 	}
@@ -63,7 +62,15 @@ const download = (url, dest, cb) => {
 	});
 };
 
-const { API_TELEGRAM_TOKEN, API_TELEGRAM_ID, API_TELEGRAM_HASH, DEFAULT_INFO_FORMAT, HOME, AUTOSAVE, EDITOR } = process.env;
+const {
+	API_TELEGRAM_TOKEN,
+	API_TELEGRAM_ID,
+	API_TELEGRAM_HASH,
+	DEFAULT_INFO_FORMAT,
+	HOME,
+	AUTOSAVE,
+	EDITOR
+} = process.env;
 
 const prog = process.argv[1].split(/\\|\//).pop();
 const editor = EDITOR || "vim";
