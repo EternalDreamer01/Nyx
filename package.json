@@ -13,7 +13,8 @@
 	],
 	"scripts": {
 		"start": "node nyx-lookup",
-		"test": "node nyx-lookup"
+		"test": "node nyx-lookup --test",
+		"publish": "node nyx-lookup --test && npm publish"
 	},
 	"author": "Dimitri Simon",
 	"license": "LGPL-3.0-or-later",

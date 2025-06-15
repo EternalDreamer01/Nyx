@@ -69,7 +69,8 @@ const {
 	DEFAULT_INFO_FORMAT,
 	HOME,
 	AUTOSAVE,
-	EDITOR
+	EDITOR,
+	PHONE_TEST
 } = process.env;
 
 const prog = process.argv[1].split(/\\|\//).pop();
@@ -118,6 +119,8 @@ ${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1
   ${colour("1")}phone\x1b[0m             International format   ./"                  
                                           ~\``
 
+const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
+
 async function main() {
 	try {
 		const pathToken = `${HOME}/.local/share/${prog}/auth`;
@@ -155,7 +158,7 @@ async function main() {
 			);
 		}
 		else {
-			const phone = typeof argv._[0] === "string" ? argv._[0].replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : argv._[0] + "";
+			const phone = formatPhone(argv.test === true ? PHONE_TEST : argv._[0]);
 			const pathPhone = `${HOME}/${prog}/${phone}`;
 
 			if (argv.s)
