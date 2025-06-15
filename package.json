@@ -12,9 +12,8 @@
 		".env.txt"
 	],
 	"scripts": {
-		"start": "node index.js",
-		"dev": "nodemon index.js",
-		"test": "node index.js"
+		"start": "node nyx-lookup",
+		"test": "node nyx-lookup"
 	},
 	"author": "Dimitri Simon",
 	"license": "LGPL-3.0-or-later",
