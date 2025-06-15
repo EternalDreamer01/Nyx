@@ -48,7 +48,6 @@ Usage: nyx-lookup phone                       88F
   Status:
     WhatsApp: ✔
     Telegram: ✔
- 
 ```
 ```sh
 $ nyx-lookup "+41 0000 000000"
@@ -98,10 +97,12 @@ By using this project, you acknowledge and agree to abide by the principles outl
 	- MacOS
 	- FreeBSD
 - Prevent Blacklist
-	- Latency between each call (prevent blacklist)
+	- Latency between each call
 	- Define limit, warn after numerous calls
 - Perf
 	- Show other WhatsApp's defined fields (labels, sectionHeader, verified)
+- More reverse phone lookup
+	- Breached databases
 
 ## Contributing
 

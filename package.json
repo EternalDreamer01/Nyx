@@ -14,7 +14,7 @@
 	"scripts": {
 		"start": "node index.js",
 		"dev": "nodemon index.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "node index.js"
 	},
 	"author": "Dimitri Simon",
 	"license": "LGPL-3.0-or-later",
@@ -30,6 +30,9 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/MikeCod/Nyx.git"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com"
 	},
 	"keywords": [
 		"reverse-phone-lookup",
