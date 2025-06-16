@@ -2,7 +2,7 @@
 
 ## Overview
 
-Nyx is a simple reverse phone number lookup.
+Nyx is a simple reverse phone lookup.
 
 ## Setup Inspected Applications
 
@@ -59,12 +59,20 @@ $ nyx-lookup "+41 0000 000000"
 No
 
 ### Is it possible to login as another phone number but personal ?
-Yes, it's a common thing to buy a prepaid SIM card from tobacconists or local stores.
+Yes - it'd be advised to prevent ban - it's a common thing to buy a prepaid SIM card from tobacconists or local stores.
 
 ### Can a user actually have WhatsApp or Telegram but doesn't appear ?
 Yes, users can always change their profile visibility. To view or edit these settings :
 * WhatsApp : Settings > Privacy
 * Telegram : Settings > Privacy and Security
+
+### Are there any risk ?
+Your phone can be banned by WhatsApp and/or Telegram, make sure to not overuse this application.
+A reasonable reverse lookup frequency would be 40/day (each one different), waiting at least a few seconds seconds between each call, at an irregular frequency.
+Use a prepaid SIM card to prevent such cases.
+
+### Is it legal ?
+It's legal to view publicly available information. However, scraping would violate Terms of Use of WhatsApp and Telegram and would result in a permanent suspension.
 
 ### What's the difference between "name", "pushname" and "shortname" ?
 |||
@@ -80,15 +88,15 @@ If you were getting this error:
 ```
 Error: Evaluation failed: Error: wid error: invalid wid
 ```
-Try removing cache using `nyx-lookup --clean` or `rm -rf ~/.cache/nyx-lookup/`
+Try cleaning up cache using `nyx-lookup --clean` or `rm -rf ~/.cache/nyx-lookup/`
 
 ### Outdated Version
 If you were getting this error:
 ```
 Error: Evaluation failed: TypeError: Cannot read properties of undefined (reading 'default')
 ```
-Make sure you have the latest version of Nyx, try reinstalling. If you installed it globally using npm use:
-```
+Make sure you have the latest version of Nyx, or try reinstalling. If you installed it globally using npm:
+```sh
 npm uninstall -g nyx-lookup
 npm install -g nyx-lookup
 ```
@@ -124,7 +132,8 @@ By using this project, you acknowledge and agree to abide by the principles outl
 - Prevent Blacklist
 	- Latency between each call
 	- Define limit, warn after numerous calls
-- Perf
+- Data
+	- Do not show name, shortname, first/last name ?
 	- Show other WhatsApp's defined fields (labels, sectionHeader, verified)
 - More reverse phone lookup
 	- Breached databases
