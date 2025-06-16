@@ -200,8 +200,11 @@ async function main() {
 			{
 				// Was saved here until version 1.0.6
 				// TODO: Remove in version 2.0
-				if (fs.existsSync(`${HOME}/.local/share/${prog}/auth`))
-					fs.renameSync(`${HOME}/.local/share/${prog}`, pathToken);
+				if (fs.existsSync(`${HOME}/.local/share/${prog}/auth`)) {
+					fs.mkdirSync(pathToken, { recursive: true });
+					fs.renameSync(`${HOME}/.local/share/${prog}/auth`, pathToken);
+					fs.rmdirSync(`${HOME}/.local/share/${prog}`);
+				}
 				const client = await new Promise(resolve => {
 					const waclient = new WhatsApp.Client({
 						authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
