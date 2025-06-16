@@ -140,7 +140,7 @@ async function main() {
   
   \x1b[4mStatus:\x1b[0m
     WhatsApp: ${fs.existsSync(pathToken) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}
-    Telegram: ${/^[-A-Za-z0-9+/]*={0,3}$/.test(API_TELEGRAM_TOKEN) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}`)
+    Telegram: ${/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}`)
 			return 0;
 		}
 		else if (argv.e || argv.env) {
@@ -153,7 +153,7 @@ async function main() {
 			fs.writeFileSync(
 				__dirname + "/.env",
 				fs.readFileSync(__dirname + "/.env", 'utf-8')
-					.replace(/API_TELEGRAM_TOKEN=?"?[-A-Za-z0-9+/]*={0,3}"?/g, `API_TELEGRAM_TOKEN=`),
+					.replace(/API_TELEGRAM_TOKEN=?"?<*\{*[-A-Za-z0-9+/]*={0,3}\}*>*"?/g, `API_TELEGRAM_TOKEN=`),
 				'utf-8'
 			);
 		}
@@ -293,10 +293,10 @@ async function main() {
 					phoneCode: async () => await input.text("Received code:"),
 					onError: err => undefined /*console.error(err)*/,
 				});
-				if (!API_TELEGRAM_TOKEN) {
+				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN)) {
 					var env = fs.readFileSync(__dirname + "/.env", 'utf-8')
 					if (env.includes("API_TELEGRAM_TOKEN"))
-						env = env.replace(/API_TELEGRAM_TOKEN=?"?[-A-Za-z0-9+/]*={0,3}"?/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`);
+						env = env.replace(/API_TELEGRAM_TOKEN=?"?<*\{*[-A-Za-z0-9+/]*={0,3}\}*>*"?/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`);
 					else
 						env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"`;
 					fs.writeFileSync(__dirname + "/.env", env, 'utf-8');
