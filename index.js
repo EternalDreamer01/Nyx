@@ -10,11 +10,14 @@ const QRCcode = require("qrcode-terminal");
 const fs = require('fs');
 const request = require('request');
 const { spawnSync } = require('child_process');
-// const ora = require('ora');
+const xdg = require('@folder/xdg');
+const homedir = require('os').homedir();
 
 require('yargs').help(false);
 const { argv } = require('yargs');
 
+// console.log(xdg())
+// process.exit(0);
 
 const Telegram = {
 	photo: {
@@ -107,13 +110,13 @@ const USERNAME_COLOUR = "35";
 const logo = `                                        ..                      
                            u.    u.    @L             uL   ..   
                          x@88k u@88c. 9888i   .dL   .@88b  @88R 
-                        ^"8888""8888" \`Y888k:*888. '"Y888k/"*P  
+                        ^"8888""8888" \`Y888k:*888. '"Y888k/"*P 
                           8888  888R    888E  888I    Y888L     
                           8888  888R    888E  888I     8888     
-                          8888  888R    888E  888I     \`888N    
+                          8888  888R    888E  888I     \`888N   
                           8888  888R    888E  888I  .u./"888&   
                          "*88*" 8888"  x888N><888' d888" Y888*" 
-                           ""   'Y"     "88"  888  \` "Y   Y"    
+                           ""   'Y"     "88"  888  \` "Y   Y"   
 ${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1b[0m                       88F               
                                              98"                
   ${colour("1")}phone\x1b[0m             International format   ./"                  
@@ -123,13 +126,16 @@ const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(
 
 async function main() {
 	try {
-		const pathToken = `${HOME}/.local/share/${prog}/auth`;
+		const { cache } = xdg();
+		const pathSave = `${homedir}/${prog}`;
+		const pathToken = `${cache}/${prog}/auth`;
 
-		// console.log(process.argv);
+
+		console.log(pathToken, pathSave);
 		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
   -p --photo        Download photo
-  -s --[no-]save    Save all user data (implies photo) into '${HOME}/${prog}' (autosave: \x1b[1m${/^true|yes$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
+  -s --[no-]save    Save all user data (implies photo) into '${pathSave}' (autosave: \x1b[1m${/^true|yes$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
   -f --format=FMT   Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
                     Available formats: 'text', 'json'
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
@@ -161,7 +167,7 @@ async function main() {
 		}
 		else {
 			const phone = formatPhone(argv.test === true ? PHONE_TEST : argv._[0]);
-			const pathPhone = `${HOME}/${prog}/${phone}`;
+			const pathPhone = `${pathSave}/${phone}`;
 
 			if (argv.s)
 				argv.save = true;
