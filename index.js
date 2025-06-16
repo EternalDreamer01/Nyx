@@ -144,7 +144,7 @@ async function main() {
 			return 0;
 		}
 		else if (argv.e || argv.env) {
-			if(!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
+			if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
 				fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
 			spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
 		}
@@ -153,7 +153,9 @@ async function main() {
 			fs.writeFileSync(
 				__dirname + "/.env",
 				fs.readFileSync(__dirname + "/.env", 'utf-8')
-					.replace(/API_TELEGRAM_TOKEN=?"?<*\{*[-A-Za-z0-9+/]*={0,3}\}*>*"?/g, `API_TELEGRAM_TOKEN=`),
+					.split("\n")
+					.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, "API_TELEGRAM_TOKEN="))
+					.join(),
 				'utf-8'
 			);
 		}
@@ -295,8 +297,16 @@ async function main() {
 				});
 				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN)) {
 					var env = fs.readFileSync(__dirname + "/.env", 'utf-8')
-					if (env.includes("API_TELEGRAM_TOKEN"))
-						env = env.replace(/API_TELEGRAM_TOKEN=?"?<*\{*[-A-Za-z0-9+/]*={0,3}\}*>*"?/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`);
+					if (env.includes("API_TELEGRAM_TOKEN")) {
+						const newEnv = env.split("\n")
+							.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`))
+							.join();
+						// API_TELEGRAM_TOKEN isn't present in .env file
+						if (env === newEnv)
+							env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"\n`;
+						else
+							env = newEnv;
+					}
 					else
 						env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"`;
 					fs.writeFileSync(__dirname + "/.env", env, 'utf-8');
