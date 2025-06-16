@@ -73,6 +73,29 @@ Yes, users can always change their profile visibility. To view or edit these set
 | `shortname` | Your prefered shortname configured on your device (first name or last name), when this phone number is registered on your WhatsApp account |
 | `pushname` | The name configured on their WhatsApp |
 
+## Frequent Issues
+
+### Cache
+If you were getting this error:
+```
+Error: Evaluation failed: Error: wid error: invalid wid
+```
+Try removing cache using `nyx-lookup --clean` or `rm -rf ~/.cache/nyx-lookup/`
+
+### Outdated Version
+If you were getting this error:
+```
+Error: Evaluation failed: TypeError: Cannot read properties of undefined (reading 'default')
+```
+Make sure you have the latest version of Nyx, try reinstalling. If you installed it globally using npm use:
+```
+npm uninstall -g nyx-lookup
+npm install -g nyx-lookup
+```
+
+## Known issues
+
+
 ### Unavailable Reverse Phone Lookup
 
 * Signal

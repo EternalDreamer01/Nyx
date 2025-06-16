@@ -16,8 +16,6 @@ const homedir = require('os').homedir();
 require('yargs').help(false);
 const { argv } = require('yargs');
 
-// console.log(xdg())
-// process.exit(0);
 
 const Telegram = {
 	photo: {
@@ -131,7 +129,7 @@ async function main() {
 		const pathToken = `${cache}/${prog}/auth`;
 
 
-		console.log(pathToken, pathSave);
+		// console.log(pathToken, pathSave);
 		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
   -p --photo        Download photo
