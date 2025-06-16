@@ -8,7 +8,7 @@ Nyx is a simple reverse phone number lookup.
 
 | API | Information | Access | Session location |
 |-|-|-|-|
-| WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / push name / Short name](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%AppData%`</td></tr><tr><td>Linux</td><td>`~/.local/share`</td></tr><tr><td>macOS</td><td>`~/Library/Preferences`</td></tr></tbody></table> |
+| WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / push name / Short name](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%AppData%`</td></tr><tr><td>Linux</td><td>`~/.cache`</td></tr><tr><td>macOS</td><td>`~/Library/Caches`</td></tr></tbody></table> |
 | Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
 
 ## Install
@@ -94,11 +94,13 @@ npm install -g nyx-lookup
 ```
 
 ## Known issues
-
+At the moment, `whatsapp-web.js` depends on a vulnerable version of `puppeteer`, see `npm audit` for more information.
 
 ### Unavailable Reverse Phone Lookup
 
 * Signal
+* LINE
+* Viber
 * Messenger
 * WeChat
 * Kakao Talk

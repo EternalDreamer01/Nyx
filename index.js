@@ -128,7 +128,6 @@ async function main() {
 		const pathSave = `${homedir}/${prog}`;
 		const pathToken = `${cache}/${prog}/auth`;
 
-
 		// console.log(pathToken, pathSave);
 		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
@@ -199,6 +198,10 @@ async function main() {
 			// console.log(pathToken);
 
 			{
+				// Was saved here until version 1.0.6
+				// TODO: Remove in version 2.0
+				if (fs.existsSync(`${HOME}/.local/share/${prog}/auth`))
+					fs.renameSync(`${HOME}/.local/share/${prog}`, pathToken);
 				const client = await new Promise(resolve => {
 					const waclient = new WhatsApp.Client({
 						authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
