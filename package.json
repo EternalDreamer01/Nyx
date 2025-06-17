@@ -1,20 +1,20 @@
 {
 	"name": "nyx-lookup",
-	"version": "1.1.0",
+	"version": "2.0.0",
 	"description": "",
 	"main": "./index.js",
 	"type": "commonjs",
 	"bin": {
-		"nyx-lookup": "index.js",
-		"nyxl": "index.js"
+		"nyx-lookup": "index.ts",
+		"nyxl": "index.ts"
 	},
 	"files": [
 		".env.txt"
 	],
 	"scripts": {
-		"start": "node nyx-lookup",
-		"test": "node nyx-lookup --test",
-		"publish": "node nyx-lookup --test && npm publish"
+		"start": "tsx nyx-lookup",
+		"test": "tsx nyx-lookup --test",
+		"publish": "tsx nyx-lookup --test && npm publish"
 	},
 	"author": "Dimitri Simon",
 	"license": "LGPL-3.0-or-later",
@@ -38,5 +38,12 @@
 		"phone",
 		"phone-number",
 		"phone-verification"
-	]
+	],
+	"devDependencies": {
+		"@types/qrcode-terminal": "^0.12.2",
+		"@types/request": "^2.48.12",
+		"@types/yargs": "^17.0.33",
+		"tsx": "^4.20.3",
+		"typescript": "^5.8.3"
+	}
 }

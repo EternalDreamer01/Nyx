@@ -4,18 +4,22 @@
 
 Nyx is a simple reverse phone lookup.
 
-## Setup Inspected Applications
-
-| API | Information | Access | Session location |
-|-|-|-|-|
-| WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / push name / Short name](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%AppData%`</td></tr><tr><td>Linux</td><td>`~/.cache`</td></tr><tr><td>macOS</td><td>`~/Library/Caches`</td></tr></tbody></table> |
-| Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
-
 ## Install
 
 ```sh
 npm i -g nyx-lookup
 ```
+
+### Requirements
+
+* Node 18+
+
+### Setup Inspected Applications
+
+| API | Information | Access | Session location |
+|-|-|-|-|
+| WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / push name / Short name](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%AppData%`</td></tr><tr><td>Linux</td><td>`~/.cache`</td></tr><tr><td>macOS</td><td>`~/Library/Caches`</td></tr></tbody></table> |
+| Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
 
 ## Usage
 
@@ -69,7 +73,7 @@ Yes, users can always change their profile visibility. To view or edit these set
 ### Are there any risk ?
 Your phone can be banned by WhatsApp and/or Telegram, make sure to not overuse this application.
 A reasonable reverse lookup frequency would be 40/day (each one different), waiting at least a few seconds seconds between each call, at an irregular frequency.
-Use a prepaid SIM card to prevent such cases.
+Use a prepaid SIM card to prevent such situations.
 
 ### Is it legal ?
 It's legal to view publicly available information. However, scraping would violate Terms of Use of WhatsApp and Telegram and would result in a permanent suspension.
