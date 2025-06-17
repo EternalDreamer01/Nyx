@@ -16,3 +16,6 @@ npm-debug.log*
 */
 *.txt
 *.py
+
+# Do not publish ts files
+*.ts
