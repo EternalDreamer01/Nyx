@@ -1,44 +1,25 @@
-#!/usr/bin/env -S npx tsx
+#!/usr/bin/env node
 
-import 'dotenv/config'
-import fs from "node:fs";
-import * as os from "node:os";
-import { Api as TelegramApi, TelegramClient, Logger as TelegramLogger } from "telegram";
-import { StringSession } from "telegram/sessions/index.js";
-import input from "input";
-import WhatsApp from "whatsapp-web.js";
-import QRCcode from "qrcode-terminal";
-import request from "request";
-import { spawnSync } from "child_process";
-import xdg from "@folder/xdg";
+require('dotenv').config({ path: __dirname + '/.env' })
 
-import yargs from "yargs";
+const { Api: TelegramApi, TelegramClient, Logger: TelegramLogger } = require("telegram");
+const { StringSession } = require("telegram/sessions/index.js");
+const input = require("input");
+const WhatsApp = require("whatsapp-web.js");
+const QRCcode = require("qrcode-terminal");
+const fs = require('fs');
+const request = require('request');
+const { spawnSync } = require('child_process');
+const xdg = require('@folder/xdg');
+const homedir = require('os').homedir();
 
+require('yargs').help(false);
+const { argv } = require('yargs');
 
-type User = {
-	id: string,
-	className?: string,
-	verified?: boolean,
-	restricted?: boolean,
-	premium?: boolean,
-	storiesHidden?: string[],
-	botBusiness?: boolean,
-	firstName?: string,
-	lastName?: string,
-	username?: string,
-	phone: string,
-	photo: string | Buffer<ArrayBufferLike> | undefined,
-	restrictionReason?: string,
-	langCode?: string,
-	status: { wasOnline: number }
-};
-
-const __nyx_dirname = import.meta.dirname;
-const { argv } = yargs() as any;
 
 const Telegram = {
 	photo: {
-		get: async function (client: TelegramClient, userList: User[]) {
+		get: async function (client, userList) {
 			for (let i = 0; i < userList.length && i < 10; ++i) {
 				userList[i].photo = await client.downloadProfilePhoto(userList[i].id, {
 					isBig: true
@@ -46,7 +27,7 @@ const Telegram = {
 			}
 			return userList;
 		},
-		isAvailable: (buf: any) => {
+		isAvailable: (buf) => {
 			if (Buffer.isBuffer(buf))
 				return buf.byteLength !== 0;
 			else if (typeof buf === "string")
@@ -56,7 +37,7 @@ const Telegram = {
 	}
 }
 
-const download = (url: string, dest: string, cb: (msg?: string | Error | NodeJS.ErrnoException | null) => void) => {
+const download = (url, dest, cb) => {
 	const file = fs.createWriteStream(dest);
 	const sendReq = request.get(url);
 
@@ -82,16 +63,6 @@ const download = (url: string, dest: string, cb: (msg?: string | Error | NodeJS.
 	});
 };
 
-type Env = {
-	API_TELEGRAM_TOKEN: string,
-	API_TELEGRAM_ID: string,
-	API_TELEGRAM_HASH: string,
-	DEFAULT_INFO_FORMAT: string,
-	HOME: string,
-	AUTOSAVE: string,
-	EDITOR: string,
-	PHONE_TEST: string
-}
 const {
 	API_TELEGRAM_TOKEN,
 	API_TELEGRAM_ID,
@@ -101,16 +72,16 @@ const {
 	AUTOSAVE,
 	EDITOR,
 	PHONE_TEST
-} = process.env as Env;
+} = process.env;
 
 const prog = "nyx-lookup";
 const editor = EDITOR || "vim";
 
-const displayColour = argv.colour !== false;
-const colour = (...args: (string | number)[]) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
+argv.colour = argv.colour !== false;
+const colour = (...args) => !argv.colour ? "" : "\x1b[" + args.join(";") + "m";
 
-const typeColour = (v: any) => {
-	if (!displayColour)
+const typeColour = v => {
+	if (!argv.colour)
 		return "";
 	switch (typeof v) {
 		case "boolean":
@@ -149,11 +120,10 @@ ${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1
   ${colour("1")}phone\x1b[0m             International format   ./"                  
                                           ~\``
 
-const formatPhone = (str: string) => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
+const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
 
 async function main() {
 	try {
-		const homedir = os.homedir();
 		const { cache } = xdg();
 		const pathSave = `${homedir}/${prog}`;
 		const pathToken = `${cache}/${prog}/auth`;
@@ -177,15 +147,15 @@ async function main() {
 			return 0;
 		}
 		else if (argv.e || argv.env) {
-			if (!fs.existsSync(`${__nyx_dirname}/.env`) || !fs.readFileSync(__nyx_dirname + "/.env", 'utf-8').trim().length)
-				fs.copyFileSync(__nyx_dirname + "/.env.txt", __nyx_dirname + "/.env");
-			spawnSync(editor, [`${__nyx_dirname}/.env`], { stdio: 'inherit' });
+			if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
+				fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
+			spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
 		}
 		else if (argv.clean) {
 			fs.unlinkSync(`${pathToken}`);
 			fs.writeFileSync(
-				__nyx_dirname + "/.env",
-				fs.readFileSync(__nyx_dirname + "/.env", 'utf-8')
+				__dirname + "/.env",
+				fs.readFileSync(__dirname + "/.env", 'utf-8')
 					.split("\n")
 					.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, "API_TELEGRAM_TOKEN="))
 					.join(),
@@ -214,16 +184,13 @@ async function main() {
 				return !DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text";
 			})();
 
-			const dataJson: {
-				whatsapp?: any,
-				telegram?: any
-			} = {
+			const dataJson = {
 				whatsapp: undefined,
 				telegram: undefined
 			};
 			let dataText = "";
 
-			const printText = (text: string) => {
+			const printText = text => {
 				console.log(text);
 				dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
 			}
@@ -238,7 +205,7 @@ async function main() {
 					fs.renameSync(`${HOME}/.local/share/${prog}/auth`, pathToken);
 					fs.rmdirSync(`${HOME}/.local/share/${prog}`);
 				}
-				const client: WhatsApp.Client = await new Promise(resolve => {
+				const client = await new Promise(resolve => {
 					const waclient = new WhatsApp.Client({
 						authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
 						puppeteer: {
@@ -283,7 +250,7 @@ async function main() {
 						user.getAbout(),
 						user.getChat()
 					]);
-					// console.log(chat?.timestamp);
+					// console.log(user);
 					// return 0;
 
 					if (!user.name && !user.pushname && !user.shortName && !picture && !about && typeof chat?.timestamp !== "number")
@@ -327,9 +294,10 @@ async function main() {
 				const client = new TelegramClient(
 					new StringSession(API_TELEGRAM_TOKEN),
 					parseInt(API_TELEGRAM_ID),
-					API_TELEGRAM_HASH, {
-					baseLogger: new TelegramLogger("error" as any)
-				});
+					API_TELEGRAM_HASH,
+					{
+						baseLogger: new TelegramLogger("error")
+					});
 
 				await client.start({
 					phoneNumber: async () => await input.text("Phone number to login:"),
@@ -338,7 +306,7 @@ async function main() {
 					onError: err => undefined /*console.error(err)*/,
 				});
 				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN)) {
-					var env = fs.readFileSync(__nyx_dirname + "/.env", 'utf-8')
+					var env = fs.readFileSync(__dirname + "/.env", 'utf-8')
 					if (env.includes("API_TELEGRAM_TOKEN")) {
 						const newEnv = env.split("\n")
 							.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`))
@@ -351,7 +319,7 @@ async function main() {
 					}
 					else
 						env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"`;
-					fs.writeFileSync(__nyx_dirname + "/.env", env, 'utf-8');
+					fs.writeFileSync(__dirname + "/.env", env, 'utf-8');
 					printText(`${colour("1;32")}\u2714\x1b[0m Telegram token saved\n`);
 				}
 
@@ -360,13 +328,11 @@ async function main() {
 				await client.connect();
 
 				try {
-					const tg: {
-						users: User[]
-					} = await client?.invoke(
+					const tg = await client?.invoke(
 						new TelegramApi.contacts.ResolvePhone({
 							phone
 						})
-					) as any;
+					);
 					if (tg !== undefined)
 						tg.users = await Telegram.photo.get(client, tg.users);
 
@@ -412,7 +378,7 @@ ${pad}Phone:         ${typeColour(phoneNumber)}${phoneNumber || ""}\x1b[0m
 ${pad}Language:      ${colour("32")}${langCode || ""}\x1b[0m
 ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) : "\x1b[3mUnknown"}\x1b[0m`);
 							if (argv.photo && Telegram.photo.isAvailable(photo))
-								fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo as Buffer);
+								fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo);
 						}
 					}
 					else {
@@ -454,7 +420,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 					}
 				}
 				catch (e) {
-					if ((e as any)?.errorMessage === "PHONE_NOT_OCCUPIED")
+					if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
 						printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m Phone not occupied`);
 					else
 						console.error(e);
