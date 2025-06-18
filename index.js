@@ -13,8 +13,11 @@ const { spawnSync } = require('child_process');
 const xdg = require('@folder/xdg');
 const homedir = require('os').homedir();
 
-require('yargs').help(false);
-const { argv } = require('yargs');
+const yargs = require('yargs');
+yargs().help(false);
+var { argv } = yargs(process.argv.slice(2));
+if (!argv)
+	argv = {};
 
 
 const Telegram = {
@@ -77,11 +80,11 @@ const {
 const prog = "nyx-lookup";
 const editor = EDITOR || "vim";
 
-argv.colour = argv.colour !== false;
-const colour = (...args) => !argv.colour ? "" : "\x1b[" + args.join(";") + "m";
+const displayColour = argv.colour !== false;
+const colour = (...args) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
 
 const typeColour = v => {
-	if (!argv.colour)
+	if (!displayColour)
 		return "";
 	switch (typeof v) {
 		case "boolean":
@@ -122,13 +125,14 @@ ${colour("4")}Usage:\x1b[0m ${colour("36")}${prog}\x1b[0m ${colour("1")}phone\x1
 
 const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
 
+
 async function main() {
 	try {
 		const { cache } = xdg();
 		const pathSave = `${homedir}/${prog}`;
 		const pathToken = `${cache}/${prog}/auth`;
 
-		// console.log(pathToken, pathSave);
+		// console.log(argv);
 		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
   -p --photo        Download photo
@@ -162,6 +166,8 @@ async function main() {
 				'utf-8'
 			);
 		}
+		else if (argv.test !== true && (!argv._ || argv._?.length === 0))
+			throw new Error("No phone number specified");
 		else {
 			const phone = formatPhone(argv.test === true ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
@@ -206,41 +212,46 @@ async function main() {
 					fs.rmdirSync(`${HOME}/.local/share/${prog}`);
 				}
 				const client = await new Promise(resolve => {
-					const waclient = new WhatsApp.Client({
-						authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
-						puppeteer: {
-							// handleSIGINT: false,
-							// headless: true,
-							args: [
-								"--no-sandbox",
-								"--disable-setuid-sandbox",
-								"--disable-extensions",
-								'--disable-gpu',
-								"--disable-accelerated-2d-canvas",
-								"--no-first-run",
-								"--no-zygote",
-								"--disable-dev-shm-usage"
-							],
-							// takeoverOnConflict: true,
-						},
-						webVersionCache: {
-							type: "remote",
-							remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html',
-						},
-						qrMaxRetries: 2
-					});
+					try {
+						const waclient = new WhatsApp.Client({
+							authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
+							puppeteer: {
+								// handleSIGINT: false,
+								// headless: true,
+								args: [
+									"--no-sandbox",
+									"--disable-setuid-sandbox",
+									"--disable-extensions",
+									'--disable-gpu',
+									"--disable-accelerated-2d-canvas",
+									"--no-first-run",
+									"--no-zygote",
+									"--disable-dev-shm-usage"
+								],
+								// takeoverOnConflict: true,
+							},
+							webVersionCache: {
+								type: "remote",
+								remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html',
+							},
+							qrMaxRetries: 2
+						});
 
-					waclient.on('qr', qr => {
-						console.log("To login to WhatsApp, scan the following QRCode within WhatsApp settings");
-						QRCcode.generate(qr, { small: true });
-					});
-					waclient.on('authenticated', qr => {
-						// console.log("Authenticated");
-					});
-					waclient.on('ready', async () => {
-						resolve(waclient);
-					});
-					waclient.initialize();
+						waclient.on('qr', qr => {
+							console.log("To login to WhatsApp, scan the following QRCode within WhatsApp settings");
+							QRCcode.generate(qr, { small: true });
+						});
+						waclient.on('authenticated', qr => {
+							// console.log("Authenticated");
+						});
+						waclient.on('ready', async () => {
+							resolve(waclient);
+						});
+						waclient.initialize();
+					}
+					catch (e) {
+						resolve(e);
+					}
 				});
 				const user = await client.getContactById(phone + "@c.us");
 				if (user !== null) {
@@ -287,6 +298,7 @@ async function main() {
 							throw res;
 					}
 				}
+				client.removeAllListeners();
 				await client.destroy();
 				// spinner.succeed("");
 			}
@@ -437,7 +449,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 		return 0;
 	}
 	catch (e) {
-		console.error(e);
+		console.log(`Error: ${e?.message}`);
 		// spinner.fail("");
 		// if (argv.save === true)
 		// 	fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : dataJson);
