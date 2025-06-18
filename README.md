@@ -129,10 +129,6 @@ By using this project, you acknowledge and agree to abide by the principles outl
 
 ## TODO
 
-- OS Support
-	- Windows
-	- MacOS
-	- FreeBSD
 - Prevent Blacklist
 	- Latency between each call
 	- Define limit, warn after numerous calls
@@ -140,6 +136,7 @@ By using this project, you acknowledge and agree to abide by the principles outl
 	- Do not show name, shortname, first/last name ?
 	- Show other WhatsApp's defined fields (labels, sectionHeader, verified)
 - More reverse phone lookup
+	- Allow multiple WhatsApp and Telegram accounts
 	- Breached databases
 
 ## Contributing
