@@ -13,8 +13,11 @@ const { spawnSync } = require('child_process');
 const xdg = require('@folder/xdg');
 const homedir = require('os').homedir();
 
-require('yargs').help(false);
-const { argv } = require('yargs');
+const yargs = require('yargs');
+yargs().help(false);
+var { argv } = yargs(process.argv.slice(2));
+if(!argv)
+	argv = {};
 
 
 const Telegram = {
@@ -77,11 +80,11 @@ const {
 const prog = "nyx-lookup";
 const editor = EDITOR || "vim";
 
-argv.colour = argv.colour !== false;
-const colour = (...args) => !argv.colour ? "" : "\x1b[" + args.join(";") + "m";
+const displayColour = argv.colour !== false;
+const colour = (...args) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
 
 const typeColour = v => {
-	if (!argv.colour)
+	if (!displayColour)
 		return "";
 	switch (typeof v) {
 		case "boolean":
@@ -128,7 +131,7 @@ async function main() {
 		const pathSave = `${homedir}/${prog}`;
 		const pathToken = `${cache}/${prog}/auth`;
 
-		// console.log(pathToken, pathSave);
+		// console.log(argv);
 		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
 			console.log(`${logo}
   -p --photo        Download photo
@@ -162,6 +165,8 @@ async function main() {
 				'utf-8'
 			);
 		}
+		else if(argv.test !== true && (!argv._ || argv._?.length === 0))
+			throw new Error("No phone number specified");
 		else {
 			const phone = formatPhone(argv.test === true ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
@@ -437,7 +442,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 		return 0;
 	}
 	catch (e) {
-		console.error(e);
+		console.log(`Error: ${e?.message}`);
 		// spinner.fail("");
 		// if (argv.save === true)
 		// 	fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : dataJson);
