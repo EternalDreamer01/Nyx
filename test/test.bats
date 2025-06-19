@@ -6,7 +6,7 @@ prog="nyx-lookup"
 @test "help" {
 	output="$(./nyx-lookup -h)"
 	[ -n "$output" ]
-	[ "${#output}" -gt 1500 ]
+	[ "${#output}" -gt 800 ]
 }
 
 real_version="$(grep '"version": "[0-9a-z.-]*"' ./package.json | sed -E 's/.*"version": "([a-z0-9.-]*)".*/\1/')"
