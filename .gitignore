@@ -5,6 +5,7 @@ node_modules
 # misc
 .DS_Store
 .env
+.env.test
 
 npm-debug.log*
 

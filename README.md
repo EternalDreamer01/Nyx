@@ -138,6 +138,7 @@ By using this project, you acknowledge and agree to abide by the principles outl
 - More reverse phone lookup
 	- Allow multiple WhatsApp and Telegram accounts
 	- Breached databases
+- Add unit tests for json
 
 ## Contributing
 
