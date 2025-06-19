@@ -40,7 +40,7 @@ $ nyx-lookup
 Usage: nyx-lookup [options] phone
 
   -p --photo        Download photo
-  -s --[no-]save    Save all user data (implies photo) into '/home/dream/nyx-lookup' (autosave: yes)
+  -s --[no-]save    Save all user data (implies photo) into '/home/<user>/nyx-lookup' (autosave: yes)
   -f --format=FMT   Define output format (default: text)
                     Available formats: 'text', 'json'
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
