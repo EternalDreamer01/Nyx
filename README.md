@@ -77,7 +77,7 @@ Yes, users can always change their profile visibility. To view or edit these set
 
 ### Are there any risk ?
 Your phone can be banned by WhatsApp and/or Telegram, make sure to not overuse this application.
-A reasonable reverse lookup frequency would be 40/day (each one different), waiting at least a few seconds seconds between each call, at an irregular frequency.
+A reasonable reverse lookup frequency would be 40/day (each one different), waiting at least a few seconds between each call, at an irregular frequency.
 Use a prepaid SIM card to prevent such situations.
 
 ### Is it legal ?
