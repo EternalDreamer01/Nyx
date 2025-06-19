@@ -10,7 +10,7 @@ Nyx is a simple reverse phone lookup.
 npm i -g nyx-lookup
 ```
 
-### Requirements
+### Prerequisites
 
 * Node 18+
 
