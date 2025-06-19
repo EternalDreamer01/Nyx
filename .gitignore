@@ -13,4 +13,4 @@ npm-debug.log*
 .wwebjs_cache
 
 # Any folder
-*/
+# */

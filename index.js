@@ -9,7 +9,7 @@ const WhatsApp = require("whatsapp-web.js");
 const QRCcode = require("qrcode-terminal");
 const fs = require('fs');
 const request = require('request');
-const { spawnSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 const xdg = require('@folder/xdg');
 const homedir = require('os').homedir();
 
@@ -144,11 +144,18 @@ async function main() {
      --clean        Clean up sessions (simple unlink/edit)
 
   -h  --help        Show this help
+  -v  --version     Show version
   
   \x1b[4mStatus:\x1b[0m
     WhatsApp: ${fs.existsSync(pathToken) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}
     Telegram: ${/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}`)
 			return 0;
+		}
+		else if (argv.v || argv.version) {
+			const current = require('./package.json').version;
+			console.log(current);
+			const latest = execSync(`npm view ${prog} version`, { encoding: 'utf-8' }).trim();
+			console.log(latest === current ? `${colour("1;32")}Latest version: ${latest}\x1b[0m` : `${colour("1;31")}Latest version: ${latest} (current: ${current})\x1b[0m`);
 		}
 		else if (argv.e || argv.env) {
 			if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
