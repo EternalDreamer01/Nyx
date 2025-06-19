@@ -35,6 +35,9 @@ npm i -g nyx-lookup
 
 ## Usage
 
+```sh
+$ nyx-lookup "+41 0000 000000"
+```
 ```
 $ nyx-lookup
 Usage: nyx-lookup [options] phone
@@ -57,9 +60,6 @@ Usage: nyx-lookup [options] phone
   Status:
     WhatsApp: ✔
     Telegram: ✔
-```
-```sh
-$ nyx-lookup "+41 0000 000000"
 ```
 
 ## FAQ
