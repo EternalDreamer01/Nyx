@@ -109,24 +109,7 @@ const typeColour = v => {
 const NAME_COLOUR = "34";
 const USERNAME_COLOUR = "35";
 
-// http://patorjk.com/software/taag/#p=display&f=Fraktur&t=nyx
-const logo = `                                        ..                      
-                           u.    u.    @L             uL   ..   
-                         x@88k u@88c. 9888i   .dL   .@88b  @88R 
-                        ^"8888""8888" \`Y888k:*888. '"Y888k/"*P 
-                          8888  888R    888E  888I    Y888L     
-                          8888  888R    888E  888I     8888     
-                          8888  888R    888E  888I     \`888N   
-                          8888  888R    888E  888I  .u./"888&   
-                         "*88*" 8888"  x888N><888' d888" Y888*" 
-                           ""   'Y"     "88"  888  \` "Y   Y"   
-\x1b[4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m \x1b[1mphone\x1b[0m                       88F               
-                                             98"                
-  \x1b[1mphone\x1b[0m             International format   ./"                  
-                                          ~\``
-
 const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
-
 
 async function main() {
 	try {
@@ -136,7 +119,8 @@ async function main() {
 
 		// console.log(argv);
 		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
-			console.log(`${logo}
+			console.log(`\x1b[0;4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m [options] \x1b[1mphone\x1b[0m
+
   -p --photo        Download photo
   -s --[no-]save    Save all user data (implies photo) into '${pathSave}' (autosave: \x1b[1m${/^true|yes$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
   -f --format=FMT   Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
@@ -147,7 +131,7 @@ async function main() {
      --non-interactive
                     Will not ask to login if no session was found
 
-     --test         Use test phone number from environment variable \x1b[1mPHONE_TEST\x1b[0m
+     --test         Test phone from env. variable PHONE_TEST
   
   -h  --help        Show this help
   -v  --version     Show version
