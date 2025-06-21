@@ -15,13 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
       - uses: actions/setup-node@v4
         with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
           node-version: 18
       - run: npm ci
       - run: npm test
@@ -31,13 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
       - uses: actions/setup-node@v4
         with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
           node-version: 18
           registry-url: https://registry.npmjs.org/
       - run: npm ci
