@@ -19,9 +19,6 @@ var { argv } = yargs(process.argv.slice(2));
 if (!argv)
 	argv = {};
 
-// console.log(argv);
-// process.exit(0)
-
 const Telegram = {
 	photo: {
 		get: async function (client, userList) {
@@ -51,7 +48,6 @@ const download = (url, dest, cb) => {
 		if (response.statusCode !== 200) {
 			return cb('Response status was ' + response.statusCode);
 		}
-
 		sendReq.pipe(file);
 	});
 
@@ -145,7 +141,7 @@ async function main() {
 			const current = require('./package.json').version;
 			console.log(current);
 			const latest = execSync(`npm view ${prog} version`, { encoding: 'utf-8' }).trim();
-			console.log(latest === current ? `${colour("1;32")}Latest version: ${latest}\x1b[0m` : `${colour("1;31")}Latest version: ${latest} (current: ${current})\x1b[0m`);
+			console.log(latest === current ? `${colour("1;32")}\u2714 Latest\x1b[0m` : `${colour("1;31")}\u2a2f Latest: ${latest}\x1b[0m`);
 		}
 		else if (argv.e || argv.env) {
 			if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)

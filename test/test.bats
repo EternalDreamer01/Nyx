@@ -14,16 +14,14 @@ real_version="$(grep '"version": "[0-9a-z.-]*"' ./package.json | sed -E 's/.*"ve
 @test "version - latest" {
 	output="$(./nyx-lookup -v)"
 	[ -n "$output" ]
-	[ "${#output}" -gt 35 ]
-	[[ "${output}" != *"current"* ]]
+	[[ "${output}" != *"Latest:"* ]]
 }
 
 @test "version - outdated" {
 	sed -i 's/"version": "[a-z0-9.-]*"/"version": "1.0.0"/' ./package.json
 	output="$(./nyx-lookup -v)"
 	[ -n "$output" ]
-	[ "${#output}" -gt 35 ]
-	[[ "${output}" == *"current"* ]]
+	[[ "${output}" == *"Latest:"* ]]
 	sed -i "s/\"version\": \"1.0.0\"/\"version\": \"$real_version\"/" ./package.json
 }
 
