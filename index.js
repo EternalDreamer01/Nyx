@@ -118,7 +118,7 @@ async function main() {
 			console.log(`\x1b[0;4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m [options] \x1b[1mphone\x1b[0m
 
   -p --photo        Download photo
-  -s --[no-]save    Save all user data (implies photo) into '${pathSave}' (autosave: \x1b[1m${/^true|yes$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
+  -s --[no-]save    Save all user data (implies photo) into '${pathSave}' (autosave: \x1b[1m${/^true|yes|1$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
   -f --format={ text | json }
                     Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
@@ -172,7 +172,7 @@ async function main() {
 			if (argv.s)
 				argv.save = true;
 			else if (argv.save === undefined)
-				argv.save = /^true|yes$/i.test(AUTOSAVE);
+				argv.save = /^true|yes|1$/i.test(AUTOSAVE);
 
 			if (argv.save !== false || argv.p || argv.photo) {
 				argv.photo = true;
