@@ -26,7 +26,7 @@ real_version="$(grep '"version": "[0-9a-z.-]*"' ./package.json | sed -E 's/.*"ve
 }
 
 @test "phone lookup - inital" {
-	output="$(./nyx-lookup --test --non-interactive)"
+	output="$(./nyx-lookup --test)"
 	[ -n "$output" ]
 	[ "${#output}" -gt 450 ]
 }
@@ -50,7 +50,7 @@ env_test="./.env.test"
 
 
 @test "phone lookup - not logged in" {
-	output="$(./nyx-lookup --test --non-interactive)"
+	output="$(./nyx-lookup --test)"
 	[ "${#output}" -lt 100 ]
 }
 
@@ -63,7 +63,7 @@ env_test="./.env.test"
 	source "$env_path"
 	[ -n "$API_TELEGRAM_TOKEN" ]
 
-	output="$(./nyx-lookup --test --non-interactive)"
+	output="$(./nyx-lookup --test)"
 	[ -n "$output" ]
 	[ "${#output}" -gt 450 ]
 }
