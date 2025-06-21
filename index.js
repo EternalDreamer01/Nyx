@@ -169,6 +169,8 @@ async function main() {
 				if(!PHONE_TEST)
 					throw new Error("No test phone specified in environment variable PHONE_TEST");
 				argv.nonInteractive = true;
+				// Is WhatsApp possible ?
+				argv.api = "tg";
 			}
 			const phone = formatPhone(argv.test === true ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
@@ -177,8 +179,6 @@ async function main() {
 				argv.save = true;
 			else if (argv.save === undefined)
 				argv.save = /^true|yes|1$/i.test(AUTOSAVE);
-
-			if
 
 			if (argv.save !== false || argv.p || argv.photo) {
 				argv.photo = true;

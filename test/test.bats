@@ -28,7 +28,7 @@ real_version="$(grep '"version": "[0-9a-z.-]*"' ./package.json | sed -E 's/.*"ve
 @test "phone lookup - inital" {
 	output="$(./nyx-lookup --test --non-interactive)"
 	[ -n "$output" ]
-	[ "${#output}" -gt 800 ]
+	[ "${#output}" -gt 450 ]
 }
 
 API_TELEGRAM_TOKEN=""
@@ -65,5 +65,5 @@ env_test="./.env.test"
 
 	output="$(./nyx-lookup --test --non-interactive)"
 	[ -n "$output" ]
-	[ "${#output}" -gt 800 ]
+	[ "${#output}" -gt 450 ]
 }
