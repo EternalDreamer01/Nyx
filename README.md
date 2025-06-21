@@ -33,7 +33,7 @@ git clone --recurse-submodules -j4 https://github.com/MikeCod/Nyx.git
 
 ### Prerequisites
 
-* Node 18+
+* Node 20+
 
 ### Setup Inspected Applications
 
