@@ -46,7 +46,7 @@ git clone --recurse-submodules -j4 https://github.com/MikeCod/Nyx.git
 
 __Supports international phone format only__
 
-Raw format is digits only however (e.g `61491570006`), you may optionally specify :
+Raw format is digits only (e.g `61491570006`) however, you may optionally specify :
 * `+` at the beginning, eventually followed by `0`: `+0448081570192`
 * `-`, `.`, ` ` (space), `/` and `\` anywhere: `61 491-570-006`
 
