@@ -44,8 +44,14 @@ git clone --recurse-submodules -j4 https://github.com/MikeCod/Nyx.git
 
 ## Usage
 
+__Supports international phone format only__
+
+Raw format is digits only however (e.g `61491570006`), you may optionally specify :
+* `+` at the beginning, eventually followed by `0`: `+0448081570192`
+* `-`, `.`, ` ` (space), `/` and `\` anywhere: `61 491-570-006`
+
 ```sh
-$ nyx-lookup "+41 0000 000000"
+$ nyx-lookup "+44 808 157 0192"
 ```
 ```
 $ nyx-lookup
