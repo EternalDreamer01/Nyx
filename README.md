@@ -2,9 +2,12 @@
 
 ## Overview
 
-Nyx is a simple reverse phone lookup.
+Nyx is a **simple reverse phone lookup** ;
+that is, a tool to obtain information about the subscriber (owner) of the phone number.
 
 Please read [Disclaimer](#disclaimer) and [Are there any risk ?](#are-there-any-risk-).
+
+*Note: This tool focus on the subscriber's information rather than the Mobile Network Operator (MNO)*
 
 ## Disclaimer
 
@@ -20,6 +23,12 @@ By using this project, you acknowledge and agree to abide by the principles outl
 
 ```sh
 npm i -g nyx-lookup
+```
+
+### Development
+
+```sh
+git clone --recurse-submodules -j4 https://github.com/MikeCod/Nyx.git
 ```
 
 ### Prerequisites
