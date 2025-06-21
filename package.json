@@ -33,10 +33,19 @@
 		"url": "git+https://github.com/MikeCod/Nyx.git"
 	},
 	"keywords": [
+		"telegram",
+		"telegram-api",
+		"whatsapp",
+		"whatsapp-api",
+		"whatsapp-web",
 		"reverse-phone-lookup",
 		"osint",
 		"phone",
 		"phone-number",
-		"phone-verification"
+		"phone-verification",
+		"reverse-lookup",
+		"caller-lookup",
+		"who-called",
+		"caller-info"
 	]
 }
