@@ -124,13 +124,14 @@ async function main() {
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
   -e --env          Edit env file (default editor: \x1b[1m${editor}\x1b[0m)
      --clean        Clean up sessions (simple unlink/edit)
-     --non-interactive
-                    Will not ask to login if no session was found
      --api={ wa | tg | all }
                     API service to use
 
+     --non-interactive
+                    Will not ask to login if no session was found
      --test         Test phone from env. variable PHONE_TEST
-  
+                    Non-interactive is automatically true
+                    
   -h  --help        Show this help
   -v  --version     Show version
   
@@ -164,8 +165,11 @@ async function main() {
 		else if (argv.test !== true && (!argv._ || argv._?.length === 0))
 			throw new Error("No phone number specified");
 		else {
-			if (argv.test === true && !PHONE_TEST)
-				throw new Error("No test phone specified in environment variable PHONE_TEST");
+			if (argv.test === true) {
+				if(!PHONE_TEST)
+					throw new Error("No test phone specified in environment variable PHONE_TEST");
+				argv.nonInteractive = true;
+			}
 			const phone = formatPhone(argv.test === true ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
 
@@ -173,6 +177,8 @@ async function main() {
 				argv.save = true;
 			else if (argv.save === undefined)
 				argv.save = /^true|yes|1$/i.test(AUTOSAVE);
+
+			if
 
 			if (argv.save !== false || argv.p || argv.photo) {
 				argv.photo = true;
