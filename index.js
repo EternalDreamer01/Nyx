@@ -119,13 +119,15 @@ async function main() {
 
   -p --photo        Download photo
   -s --[no-]save    Save all user data (implies photo) into '${pathSave}' (autosave: \x1b[1m${/^true|yes$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
-  -f --format=FMT   Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
-                    Available formats: 'text', 'json'
+  -f --format={ text | json }
+                    Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
   -e --env          Edit env file (default editor: \x1b[1m${editor}\x1b[0m)
      --clean        Clean up sessions (simple unlink/edit)
      --non-interactive
                     Will not ask to login if no session was found
+     --api={ wa | tg | all }
+                    API service to use
 
      --test         Test phone from env. variable PHONE_TEST
   
@@ -198,6 +200,7 @@ async function main() {
 
 			// console.log(pathToken);
 
+			if(typeof argv.api === "string" && ["all","wa"].includes(argv.api))
 			{
 				// Was saved here until version 1.0.6
 				// TODO: Remove in version 2.0
@@ -303,6 +306,8 @@ async function main() {
 				}
 				// spinner.succeed("");
 			}
+
+			if(typeof argv.api === "string" && ["all","tg"].includes(argv.api))
 			{
 				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) && argv.nonInteractive !== false)
 					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m No session found`);

@@ -60,13 +60,15 @@ Usage: nyx-lookup [options] phone
 
   -p --photo        Download photo
   -s --[no-]save    Save all user data (implies photo) into '/home/<user>/nyx-lookup' (autosave: yes)
-  -f --format=FMT   Define output format (default: text)
-                    Available formats: 'text', 'json'
+  -f --format={ text | json }
+                    Define output format (default: text)
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
   -e --env          Edit env file (default editor: vim)
      --clean        Clean up sessions (simple unlink/edit)
      --non-interactive
                     Will not ask to login if no session was found
+     --api={ wa | tg | all }
+                    API service to use
 
      --test         Test phone from env. variable PHONE_TEST
   
