@@ -12,7 +12,8 @@ prog="nyx-lookup"
 real_version="$(grep '"version": "[0-9a-z.-]*"' ./package.json | sed -E 's/.*"version": "([a-z0-9.-]*)".*/\1/')"
 
 @test "version - latest" {
-	sed -i "s/\"version\": \"1.0.0\"/\"version\": \"$(npm view nyx-lookup version)\"/" ./package.json
+	latest_version="$(npm view nyx-lookup version)"
+	sed -i "s/\"version\": \"1.0.0\"/\"version\": \"$latest_version\"/" ./package.json
 	output="$(node index.js -v)"
 	[ -n "$output" ]
 	[[ "${output}" != *"Latest:"* ]]
