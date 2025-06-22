@@ -18,12 +18,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-      - run: rm -rf test/bats test/test_helper
-      - run: git rm -rf test/bats test/test_helper
-      - run: git submodule add https://github.com/bats-core/bats-core.git test/bats
-      - run: git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
-      - run: git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
+      - run: |
+          npm ci
+          rm -rf test/bats test/test_helper
+          git rm -rf test/bats test/test_helper
+          git submodule add https://github.com/bats-core/bats-core.git test/bats
+          git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
+          git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
+      - env: 
+          API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
+          API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
+          API_TELEGRAM_TOKEN: ${{secrets.API_TELEGRAM_TOKEN}}
+          DEFAULT_INFO_FORMAT: ${{secrets.DEFAULT_INFO_FORMAT}}
+          AUTOSAVE: ${{secrets.AUTOSAVE}}
+          PHONE_TEST: ${{secrets.PHONE_TEST}}
       - run: npm test
 
   publish-npm:
@@ -36,11 +44,6 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: rm -rf test/bats test/test_helper
-      - run: git rm -rf test/bats test/test_helper
-      - run: git submodule add https://github.com/bats-core/bats-core.git test/bats
-      - run: git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
-      - run: git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

@@ -15,13 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
       - run: npm ci
+      - run: rm -rf test/bats test/test_helper
+      - run: git rm -rf test/bats test/test_helper
+      - run: git submodule add https://github.com/bats-core/bats-core.git test/bats
+      - run: git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
+      - run: git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
       - run: npm test
 
   publish-gpr:
@@ -32,12 +34,9 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
       - run: npm publish
