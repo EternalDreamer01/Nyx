@@ -29,9 +29,9 @@ jobs:
           API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
           API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
           API_TELEGRAM_TOKEN: ${{secrets.API_TELEGRAM_TOKEN}}
-          DEFAULT_INFO_FORMAT: ${{secrets.DEFAULT_INFO_FORMAT}}
-          AUTOSAVE: ${{secrets.AUTOSAVE}}
           PHONE_TEST: ${{secrets.PHONE_TEST}}
+          DEFAULT_INFO_FORMAT: ${{env.DEFAULT_INFO_FORMAT}}
+          AUTOSAVE: ${{env.AUTOSAVE}}
       - run: npm test
 
   publish-npm:
