@@ -28,7 +28,7 @@ npm i -g nyx-lookup
 ### Development
 
 ```sh
-git clone --recurse-submodules -j4 https://github.com/MikeCod/Nyx.git
+git clone --recurse-submodules -j4 https://github.com/EternalDreamer01/Nyx.git
 ```
 
 ### Prerequisites
