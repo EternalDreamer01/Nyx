@@ -25,7 +25,7 @@ jobs:
           git submodule add https://github.com/bats-core/bats-core.git test/bats
           git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
           git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
-      - env: 
+      - env: |
           API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
           API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
           API_TELEGRAM_TOKEN: ${{secrets.API_TELEGRAM_TOKEN}}
