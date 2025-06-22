@@ -47,6 +47,6 @@ jobs:
           node-version: 20
           # registry-url: https://npm.pkg.github.com/
       - run: npm ci
-      - run: npm publish --registry=https://npm.pkg.github.com/
+      - run: npm publish --scope=@eternaldreamer --registry=https://npm.pkg.github.com/
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_TOKEN}}
