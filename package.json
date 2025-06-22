@@ -1,6 +1,6 @@
 {
 	"name": "nyx-lookup",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "Reverse phone lookup, based on WhatsApp and Telegram",
 	"main": "./index.js",
 	"type": "commonjs",

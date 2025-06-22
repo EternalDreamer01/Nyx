@@ -25,7 +25,7 @@ latest_version="$(npm view nyx-lookup version)"
 	output="$(node index.js -v)"
 	[ -n "$output" ]
 	[[ "${output}" == *"Latest:"* ]]
-	sed -i "s/\"version\": \"1.0.0\"/\"version\": \"$real_version\"/" ./package.json
+	sed -i "s/\"version\": \"[a-z0-9.-]*\"/\"version\": \"$real_version\"/" ./package.json
 }
 
 @test "phone lookup - inital" {
