@@ -18,6 +18,8 @@ jobs:
         uses: actions/checkout@v4
         uses: actions/setup-node@v4
         with:
+          persist-credentials: false
+          ref: ${{ github.event.inputs.checkoutRef }}
           node-version: 20
         run: |
           npm ci
@@ -27,13 +29,13 @@ jobs:
           git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
           git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
       - name: "Launch tests"
-        run: |
-          echo API_TELEGRAM_ID=${{secrets.API_TELEGRAM_ID}} >> .env
-          echo API_TELEGRAM_HASH="${{secrets.API_TELEGRAM_HASH}} >> .env
-          echo API_TELEGRAM_TOKEN="${{secrets.API_TELEGRAM_TOKEN}}" >> .env
-          echo PHONE_TEST=${{secrets.PHONE_TEST}} >> .env
-          echo DEFAULT_INFO_FORMAT=${{env.DEFAULT_INFO_FORMAT}} >> .env
-          echo AUTOSAVE=${{env.AUTOSAVE}} >> .env
+        env:
+          API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
+          API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
+          API_TELEGRAM_TOKEN: ${{secrets.API_TELEGRAM_TOKEN}}
+          PHONE_TEST: ${{secrets.PHONE_TEST}}
+          DEFAULT_INFO_FORMAT: ${{env.DEFAULT_INFO_FORMAT}}
+          AUTOSAVE: ${{env.AUTOSAVE}}
         run: npm test
 
   publish-npm:
@@ -43,6 +45,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
+          persist-credentials: false
+          ref: ${{ github.event.inputs.checkoutRef }}
           node-version: 20
           registry-url: https://registry.npmjs.org/
       - run: npm ci
