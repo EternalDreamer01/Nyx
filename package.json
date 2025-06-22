@@ -15,8 +15,7 @@
 		"clean": "node index.js --clean",
 		"start": "node index.js",
 		"test": "./test/test.bats",
-		"test:phone": "node index.js --test",
-		"publish": "./test/test.bats && npm publish"
+		"test:phone": "node index.js --test"
 	},
 	"author": "Dimitri Simon",
 	"license": "LGPL-3.0-or-later",
