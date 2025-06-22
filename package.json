@@ -12,8 +12,10 @@
 		".env.txt"
 	],
 	"scripts": {
-		"start": "node nyx-lookup",
+		"clean": "node index.js --clean",
+		"start": "node index.js",
 		"test": "./test/test.bats",
+		"test:phone": "node index.js --test",
 		"publish": "./test/test.bats && npm publish"
 	},
 	"author": "Dimitri Simon",
