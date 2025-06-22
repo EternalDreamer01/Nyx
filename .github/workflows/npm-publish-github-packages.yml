@@ -45,10 +45,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          token: ${{secrets.GH_TOKEN}}
           registry: https://npm.pkg.github.com/
           always-auth: true
-      - run: npm login
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_TOKEN}}
