@@ -45,7 +45,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm ci
-      - run: npm publish --scope=@EternalDreamer01 --registry=https://npm.pkg.github.com/
+      # - run: npm ci
+      - run: sed -i 's/"name": "nyx-lookup"/"name": "@EternalDreamer01\/nyx-lookup"/' ./package.json
+      - run: npm publish --registry=https://npm.pkg.github.com/
         env:
           NODE_AUTH_TOKEN: ${{secrets.GH_TOKEN}}
