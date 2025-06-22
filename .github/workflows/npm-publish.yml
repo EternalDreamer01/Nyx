@@ -14,29 +14,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: "Setup"
-        uses: actions/checkout@v4
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
           node-version: 20
-        run: |
+      - run: |
           npm ci
           rm -rf test/bats test/test_helper
           git rm -rf test/bats test/test_helper
           git submodule add https://github.com/bats-core/bats-core.git test/bats
           git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
           git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
-      - name: "Launch tests"
-        env:
+      - env: |
           API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
           API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
           API_TELEGRAM_TOKEN: ${{secrets.API_TELEGRAM_TOKEN}}
           PHONE_TEST: ${{secrets.PHONE_TEST}}
           DEFAULT_INFO_FORMAT: ${{env.DEFAULT_INFO_FORMAT}}
           AUTOSAVE: ${{env.AUTOSAVE}}
-        run: npm test
+      - run: npm test
 
   publish-npm:
     needs: build
@@ -45,8 +41,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          persist-credentials: false
-          ref: ${{ github.event.inputs.checkoutRef }}
           node-version: 20
           registry-url: https://registry.npmjs.org/
       - run: npm ci
