@@ -4,7 +4,8 @@
 node_modules/
 # misc
 .DS_Store
-.env
+.env*
+!.env.txt
 
 npm-debug.log*
 

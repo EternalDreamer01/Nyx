@@ -1,6 +1,6 @@
 {
 	"name": "nyx-lookup",
-	"version": "1.1.4",
+	"version": "1.2.1",
 	"description": "Reverse phone lookup, based on WhatsApp and Telegram",
 	"main": "./index.js",
 	"type": "commonjs",
@@ -12,9 +12,10 @@
 		".env.txt"
 	],
 	"scripts": {
-		"start": "node nyx-lookup",
-		"test": "node nyx-lookup --test",
-		"publish": "node nyx-lookup --test && npm publish"
+		"clean": "node index.js --clean",
+		"start": "node index.js",
+		"test": "./test/test.bats",
+		"test:phone": "node index.js --test"
 	},
 	"author": "Dimitri Simon",
 	"license": "LGPL-3.0-or-later",
@@ -30,13 +31,22 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/MikeCod/Nyx.git"
+		"url": "git+https://github.com/EternalDreamer01/Nyx.git"
 	},
 	"keywords": [
+		"telegram",
+		"telegram-api",
+		"whatsapp",
+		"whatsapp-api",
+		"whatsapp-web",
 		"reverse-phone-lookup",
 		"osint",
 		"phone",
 		"phone-number",
-		"phone-verification"
+		"phone-verification",
+		"reverse-lookup",
+		"caller-lookup",
+		"who-called",
+		"caller-info"
 	]
 }
