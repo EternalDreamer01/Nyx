@@ -3,6 +3,11 @@
 prog="nyx-lookup"
 
 
+sleep_random() {
+	# Sleep for a random time between 2.5 and 7.5 seconds to avoid rate limiting
+	sleep $(printf "%.3f" $(( $RANDOM / (32767/5.0) + 2.5 )))
+}
+
 @test "help" {
 	output="$(node index.js -h)"
 	[ -n "$output" ]
@@ -34,6 +39,8 @@ latest_version="$(npm view nyx-lookup version)"
 	[ "${#output}" -gt 450 ]
 }
 
+sleep_random
+
 API_TELEGRAM_TOKEN=""
 cache_dir="$HOME/.cache/nyx-lookup"
 cache_test="$HOME/.cache/nyx-lookup-test"
@@ -57,6 +64,8 @@ env_test="./.env.test"
 	[ "${#output}" -lt 100 ]
 }
 
+sleep_random
+
 @test "phone lookup - logged in" {
 	# rm -rf "$cache_dir" "$env_path"
 	# mv "$cache_test" "$cache_dir"
@@ -70,3 +79,5 @@ env_test="./.env.test"
 	[ -n "$output" ]
 	[ "${#output}" -gt 450 ]
 }
+
+sleep_random
