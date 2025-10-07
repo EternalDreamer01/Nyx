@@ -94,12 +94,20 @@ Yes, users can always change their profile visibility. To view or edit these set
 * Telegram : Settings > Privacy and Security
 
 ### Are there any risk ?
-Your phone can be banned by WhatsApp and/or Telegram, make sure to not overuse this application.
-A reasonable reverse lookup frequency would be 40/day (each one different), waiting at least a few seconds between each call, at an irregular frequency.
+The possible potential risks, temporary or permanently :
+1. Restricted to use WhatsApp through another device, or Telegram API
+2. Account suspension via phone number
+
+A reasonable reverse lookup frequency would be ;
+| WhatsApp | Telegram |
+|-|-|
+| 4/day | 12/day |
+
+Waiting at least a few seconds between each call, at an irregular frequency.
 Use a prepaid SIM card to prevent such situations.
 
 ### Is it legal ?
-It's legal to view publicly available information. However, scraping would violate Terms of Use of WhatsApp and Telegram and would result in a permanent suspension.
+It's legal to view publicly available information. However, scraping would violate Terms of Use of WhatsApp and Telegram and could result in a permanent suspension.
 
 ### What's the difference between "name", "pushname" and "shortname" ?
 |||
