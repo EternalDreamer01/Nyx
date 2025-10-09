@@ -81,6 +81,9 @@ const editor = EDITOR || "vim";
 const displayColour = argv.colour !== false;
 const colour = (...args) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
 
+const NAME_COLOUR = "34";
+const USERNAME_COLOUR = "35";
+
 const typeColour = v => {
 	if (!displayColour)
 		return "";
@@ -92,7 +95,10 @@ const typeColour = v => {
 		case "object":
 			return "\x1b[36m";
 		case "string":
-			if (v.startsWith("+"))
+			const b = v.toLowerCase();
+			if (b === "true" || b === "false")
+				return `\x1b[${v === "true" ? "32" : "31"}m`;
+			else if (v.startsWith("+"))
 				return "\x1b[32m";
 			else if (/^\d+$/.test(v))
 				return "\x1b[36m";
@@ -102,8 +108,18 @@ const typeColour = v => {
 	}
 }
 
-const NAME_COLOUR = "34";
-const USERNAME_COLOUR = "35";
+function colourAuto(out) {
+	const __auto = v => {
+		v = v.slice(1);
+		return `:${typeColour(v.trim())}${v}\x1b[0m`;
+	}
+	return out
+		.replace(/(\r|\n)(\w+:)/g, "\n\x1b[1;4m$2\x1b[0m")
+		.replace(/name:(\s+)([\w ]+)(\r|\n)/gi, `name:$1\x1b[${NAME_COLOUR}m$2\x1b[0m\n`)
+		.replace(/activity:(\s+)([\w ()+:]+)(\r|\n)/gi, `activity:$1\x1b[35m$2\x1b[0m\n`)
+		.replace(/:(\s+)([\w ()+]+)(\r|\n)/g, __auto)
+}
+
 
 const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
 
@@ -126,6 +142,7 @@ async function main() {
      --clean        Clean up sessions (simple unlink/edit)
      --api={ wa | tg | all }
                     API service to use
+     --force        Force query, do not use cached data.
 
      --non-interactive
                     Will not ask to login if no session was found
@@ -166,7 +183,7 @@ async function main() {
 			throw new Error("No phone number specified");
 		else {
 			if (argv.test === true) {
-				if(!PHONE_TEST)
+				if (!PHONE_TEST)
 					throw new Error("No test phone specified in environment variable PHONE_TEST");
 				argv.nonInteractive = true;
 				// Is WhatsApp possible ?
@@ -174,6 +191,21 @@ async function main() {
 			}
 			const phone = formatPhone(argv.test === true ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
+			if (argv.force !== true && fs.existsSync(pathPhone + "/")) {
+				if (fs.existsSync(pathPhone + "/info.txt")) {
+					const data = fs.readFileSync(pathPhone + "/info.txt");
+					if (data.length != 0) {
+						console.log(colourAuto(data.toString()));
+						return 0;
+					}
+				} else if (fs.existsSync(pathPhone + "/info.json")) {
+					const data = fs.readFileSync(pathPhone + "/info.json");
+					if (data.length != 0) {
+						console.log(colourAuto(data.toString()));
+						return 0;
+					}
+				}
+			}
 
 			if (argv.s)
 				argv.save = true;
@@ -206,8 +238,8 @@ async function main() {
 
 			// console.log(pathToken);
 
-			if(typeof argv.api === "string" && ["all","wa"].includes(argv.api))
-			{
+			// console.log(argv.api);
+			if (argv.api === undefined || ["all", "wa"].includes(argv.api)) {
 				// Was saved here until version 1.0.6
 				// TODO: Remove in version 2.0
 				if (fs.existsSync(`${HOME}/.local/share/${prog}/auth`)) {
@@ -216,8 +248,10 @@ async function main() {
 					fs.rmdirSync(`${HOME}/.local/share/${prog}`);
 				}
 				const client = await new Promise(resolve => {
-					if (!fs.existsSync(pathToken) && argv.nonInteractive !== false)
+					// console.log(pathToken, argv)
+					if (!fs.existsSync(pathToken) && argv.nonInteractive === true)
 						return resolve(null);
+					
 					try {
 						const waclient = new WhatsApp.Client({
 							authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
@@ -238,38 +272,44 @@ async function main() {
 							},
 							webVersionCache: {
 								type: "remote",
-								remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html',
+								remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/refs/heads/main/html/2.3000.1028141462-alpha.html',
 							},
 							qrMaxRetries: 2
 						});
 
 						waclient.on('qr', qr => {
 							console.log("To login to WhatsApp, scan the following QRCode within WhatsApp settings");
+							// console.log(qr)
 							QRCcode.generate(qr, { small: true });
 						});
-						waclient.on('authenticated', qr => {
-							// console.log("Authenticated");
-						});
+						// waclient.on('authenticated', qr => {
+						// 	console.log("Authenticated");
+						// });
 						waclient.on('ready', async () => {
+							// console.log("ready");
 							resolve(waclient);
 						});
 						waclient.initialize();
 					}
 					catch (e) {
+						console.log(e)
 						resolve(e);
 					}
 				});
 				if (client === null)
 					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m No session found`);
 				else {
+					// console.log("Logged in!");
 					const user = await client.getContactById(phone + "@c.us");
+					// console.log("Got contact by id !")
 					if (user !== null) {
-						const [picture, number, about, chat] = await Promise.all([
+						const [picture, number, about, chat] = await Promise.allSettled([
 							user.getProfilePicUrl(),
 							user.getFormattedNumber(),
 							user.getAbout(),
 							user.getChat()
 						]);
+						// console.log(picture)
 						// console.log(user);
 						// return 0;
 
@@ -283,10 +323,10 @@ async function main() {
   Shortname:     ${colour(NAME_COLOUR)}${user.shortName || ""}\x1b[0m
   Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
 
-  Picture:       ${picture || ""}
-  Phone:         ${typeColour(number)}${number || ""}\x1b[0m
-  About:         ${colour("33")}${about || ""}\x1b[0m
-  Last activity: ${typeof chat?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
+  Picture:       ${picture.value || ""}
+  Phone:         ${typeColour(number)}${number.value || ""}\x1b[0m
+  About:         ${colour("33")}${about.value || ""}\x1b[0m
+  Last activity: ${typeof chat.value?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
 `);
 						}
 						else {
@@ -313,9 +353,8 @@ async function main() {
 				// spinner.succeed("");
 			}
 
-			if(typeof argv.api === "string" && ["all","tg"].includes(argv.api))
-			{
-				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) && argv.nonInteractive !== false)
+			if (argv.api === undefined || ["all", "tg"].includes(argv.api)) {
+				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) && argv.nonInteractive === true)
 					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m No session found`);
 				else {
 					const client = new TelegramClient(
@@ -459,8 +498,11 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 			// console.log("${colour("1;32")}Done.\x1b[0m");
 			if (format === "json")
 				console.log(JSON.stringify(dataJson));
-			if (argv.save === true)
-				fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
+			if (argv.save === true) {
+				const data = (format === "text" ? dataText : JSON.stringify(dataJson)).replace(/\x1b\[[\d;]+m/g, '').trim();
+				if (data.length < 70)
+					fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
+			}
 		}
 		return 0;
 	}
