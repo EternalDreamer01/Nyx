@@ -170,14 +170,15 @@ async function main() {
 		}
 		else if (argv.clean) {
 			fs.rmSync(pathToken, { recursive: true, force: true });
-			fs.writeFileSync(
-				__dirname + "/.env",
-				fs.readFileSync(__dirname + "/.env", 'utf-8')
-					.split("\n")
-					.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, "API_TELEGRAM_TOKEN="))
-					.join("\n"),
-				'utf-8'
-			);
+			// Should we remove telegram token when cleaning ?
+			// fs.writeFileSync(
+			// 	__dirname + "/.env",
+			// 	fs.readFileSync(__dirname + "/.env", 'utf-8')
+			// 		.split("\n")
+			// 		.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, "API_TELEGRAM_TOKEN="))
+			// 		.join("\n"),
+			// 	'utf-8'
+			// );
 		}
 		else if (argv.test !== true && (!argv._ || argv._?.length === 0))
 			throw new Error("No phone number specified");
