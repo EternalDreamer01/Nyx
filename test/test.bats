@@ -5,7 +5,7 @@ prog="nyx-lookup"
 
 sleep_random() {
 	# Sleep for a random time between 2.5 and 7.5 seconds to avoid rate limiting
-	sleep $(printf "%.3f" $(( $RANDOM / (32767/5.0) + 2.5 )))
+	sleep 2.6
 }
 
 @test "help" {
