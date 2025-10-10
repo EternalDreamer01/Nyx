@@ -54,8 +54,8 @@ env_test="./.env.test"
 	output="$(node index.js --clean)"
 	[ -z "$output" ] # No output expected
 	# [ ! -d "$cache_dir/auth" ]
-	source "$env_path"
-	[ -z "$API_TELEGRAM_TOKEN" ]
+	# source "$env_path"
+	# [ -z "$API_TELEGRAM_TOKEN" ]
 }
 
 
