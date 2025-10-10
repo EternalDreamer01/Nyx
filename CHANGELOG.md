@@ -1,4 +1,10 @@
-# 1.3.0 (2025-10-10)
+# 1.3.1 (2025-10-10)
+
+## Chores
+
+*  do not remove telegram token on clean ([b5e7dcc0](https://github.com/EternalDreamer01/Nyx/commit/b5e7dcc08b3f2d337e2e91a328c8bc52199f8223))
+
+# 1.3.0 (2025-10-09)
 
 ## Chores
 

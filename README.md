@@ -69,6 +69,7 @@ Usage: nyx-lookup [options] phone
                     Will not ask to login if no session was found
      --api={ wa | tg | all }
                     API service to use
+     --force        Force query, do not use cached data.
 
      --test         Test phone from env. variable PHONE_TEST
   
@@ -159,6 +160,7 @@ At the moment, `whatsapp-web.js` depends on a vulnerable version of `puppeteer`,
 - More reverse phone lookup
 	- Allow multiple WhatsApp and Telegram accounts
 	- Breached databases
+	- [Truecaller](https://github.com/sumithemmadi/truecallerjs)
 - Add unit tests for json
 
 ## Contributing
