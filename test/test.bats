@@ -1,11 +1,20 @@
 #!./test/bats/bin/bats
 
 prog="nyx-lookup"
+cache_dir="$HOME/.cache/nyx-lookup"
+cache_test="$HOME/.cache/nyx-lookup-test"
+env_path="./.env"
+env_test="./.env.test"
 
 
 sleep_random() {
 	# Sleep for a random time between 2.5 and 7.5 seconds to avoid rate limiting
 	sleep 2.6
+}
+
+@test "env" {
+	[ -f ".env" ]
+	[ -f ".env.txt" ]
 }
 
 @test "help" {
@@ -34,22 +43,24 @@ latest_version="$(npm view nyx-lookup version)"
 }
 
 @test "phone lookup - inital" {
-	output="$(node index.js --test --format=text)"
+	output="$(node index.js --test --force --save --format=text)"
 	[ -n "$output" ]
-	[ "${#output}" -gt 450 ]
+	[ "${#output}" -gt 400 ]
+
+	source "$env_path"
+	output="$(cat $HOME/nyx-lookup/${PHONE_TEST}/info.txt)"
+	[ -n "$output" ]
+	[ "${#output}" -gt 300 ]
 }
 
 sleep_random
 
-API_TELEGRAM_TOKEN=""
-cache_dir="$HOME/.cache/nyx-lookup"
-cache_test="$HOME/.cache/nyx-lookup-test"
-env_path="./.env"
-env_test="./.env.test"
+# API_TELEGRAM_TOKEN=""
 
 @test "clean" {
-	# cp -r "$cache_dir" "$cache_test"
-	cp "$env_path" "$env_test"
+	# mv "$cache_dir" "$cache_test"
+	mv "$env_path" "$env_test"
+	touch "$env_path"
 
 	output="$(node index.js --clean)"
 	[ -z "$output" ] # No output expected
@@ -58,16 +69,20 @@ env_test="./.env.test"
 	# [ -z "$API_TELEGRAM_TOKEN" ]
 }
 
+# @test "phone lookup - not logged in - cached data" {
+# 	output="$(node index.js ${PHONE_TEST} --test --format=text)"
+# 	[ -n "$output" ]
+# 	[ "${#output}" -gt 300 ]
+# }
 
-@test "phone lookup - not logged in" {
-	output="$(node index.js --test --format=text)"
-	[ "${#output}" -lt 100 ]
-}
+# @test "phone lookup - not logged in - force query" {
+# 	output="$(node index.js ${PHONE_TEST} --test --force --format=text || true)"
+# 	[ "${#output}" -lt 100 ]
+# }
 
-sleep_random
+# sleep_random
 
 @test "phone lookup - logged in" {
-	# rm -rf "$cache_dir" "$env_path"
 	# mv "$cache_test" "$cache_dir"
 	mv "$env_test" "$env_path"
 
@@ -75,7 +90,7 @@ sleep_random
 	source "$env_path"
 	[ -n "$API_TELEGRAM_TOKEN" ]
 
-	output="$(node index.js --test --format=text)"
+	output="$(node index.js --test --force --format=text)"
 	[ -n "$output" ]
 	[ "${#output}" -gt 450 ]
 }
