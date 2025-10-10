@@ -149,8 +149,8 @@ async function main() {
      --test         Test phone from env. variable PHONE_TEST
                     Non-interactive is automatically true
                     
-  -h  --help        Show this help
-  -v  --version     Show version
+  -h --help        Show this help
+  -v --version     Show version
   
   \x1b[4mStatus:\x1b[0m
     WhatsApp: ${fs.existsSync(pathToken) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}
@@ -184,14 +184,15 @@ async function main() {
 			throw new Error("No phone number specified");
 		else {
 			if (argv.test === true) {
-				if (!PHONE_TEST)
-					throw new Error("No test phone specified in environment variable PHONE_TEST");
+				if (!PHONE_TEST && argv._.length !== 1)
+					throw new Error("No test phone specified in environment variable PHONE_TEST and no phone number passed in argument");
 				argv.nonInteractive = true;
 				// Is WhatsApp possible ?
 				argv.api = "tg";
 			}
-			const phone = formatPhone(argv.test === true ? PHONE_TEST : (argv._[0] + ""));
+			const phone = formatPhone(argv.test === true && PHONE_TEST ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
+			// console.log(argv.force !== true, pathPhone+"/", fs.existsSync(pathPhone + "/"))
 			if (argv.force !== true && fs.existsSync(pathPhone + "/")) {
 				if (fs.existsSync(pathPhone + "/info.txt")) {
 					const data = fs.readFileSync(pathPhone + "/info.txt");
@@ -501,8 +502,8 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 				console.log(JSON.stringify(dataJson));
 			if (argv.save === true) {
 				const data = (format === "text" ? dataText : JSON.stringify(dataJson)).replace(/\x1b\[[\d;]+m/g, '').trim();
-				if (data.length < 70)
-					fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : JSON.stringify(dataJson));
+				if (data.length > 70)
+					fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, data);
 			}
 		}
 		return 0;
