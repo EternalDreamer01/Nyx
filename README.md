@@ -9,6 +9,18 @@ Please read [Disclaimer](#disclaimer) and [Are there any risk ?](#are-there-any-
 
 *Note: This tool focus on the subscriber's information rather than the Mobile Network Operator (MNO)*
 
+2. [Disclaimer](#disclaimer)
+2. [Install](#install)
+2. [Usage](#usage)
+2. [FAQ](#faq)
+	* [Is the user notified about this ?](#is-the-user-notified-about-this-)
+	* [Is it possible to login as another phone number but personal ?](#is-it-possible-to-login-as-another-phone-number-but-personal-)
+	* [Are there any risk ?](#are-there-any-risk-)
+	* [Is it legal ?](#is-it-legal-)
+	* [What's the difference between "name" and "pushname" ?](#whats-the-difference-between-name-and-pushname-)
+2. [Known Issues](#known-issues)
+
+
 ## Disclaimer
 
 This project is intended for educational and lawful purposes only. The primary goal is to provide users with a platform to learn and experiment with various technologies, programming languages, and security concepts in a controlled environment. The creators and contributors of this project do not endorse or support any malicious activities, including but not limited to hacking, unauthorized access, or any form of cybercrime.
@@ -39,7 +51,7 @@ git clone --recurse-submodules -j4 https://github.com/EternalDreamer01/Nyx.git
 
 | API | Information | Access | Session location |
 |-|-|-|-|
-| WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / push name / Short name](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%LocalAppData%`</td></tr><tr><td>Linux</td><td>`~/.cache`</td></tr><tr><td>macOS</td><td>`~/Library/Caches`</td></tr></tbody></table> |
+| WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / pushname](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%LocalAppData%`</td></tr><tr><td>Linux</td><td>`~/.cache`</td></tr><tr><td>macOS</td><td>`~/Library/Caches`</td></tr></tbody></table> |
 | Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
 
 ## Usage
@@ -58,8 +70,8 @@ $ nyxl 448081570192
 $ nyx-lookup
 Usage: nyx-lookup [options] phone
 
-  -p --photo        Download photo
-  -s --[no-]save    Save all user data (implies photo) into '/home/<user>/nyx-lookup' (autosave: yes)
+  -p --photo        Download photo into '/home/<user>/nyx-lookup'
+  -s --[no-]save    Save user info and photo (autosave: yes)
   -f --format={ text | json }
                     Define output format (default: text)
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
@@ -80,6 +92,13 @@ Usage: nyx-lookup [options] phone
     WhatsApp: ✔
     Telegram: ✔
 ```
+
+### Technical notes
+
+#### Database
+
+The database of saved results is accessible at `/home/<user>/nyx-lookup/saved.db`.
+To enable/disable autosave, run `nyx-lookup -e` and edit `AUTOSAVE`.
 
 ## FAQ
 
@@ -110,11 +129,10 @@ Use a prepaid SIM card to prevent such situations.
 ### Is it legal ?
 It's legal to view publicly available information. However, scraping would violate Terms of Use of WhatsApp and Telegram and could result in a permanent suspension.
 
-### What's the difference between "name", "pushname" and "shortname" ?
+### What's the difference between "name" and "pushname" ?
 |||
 |-|-|
 | `name` | The name registered for this phone number on your personal WhatsApp account |
-| `shortname` | Your prefered shortname configured on your device (first name or last name), when this phone number is registered on your WhatsApp account |
 | `pushname` | The name configured on their WhatsApp |
 
 ## Frequent Issues

@@ -8,10 +8,14 @@ const input = require("input");
 const WhatsApp = require("whatsapp-web.js");
 const QRCcode = require("qrcode-terminal");
 const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const request = require('request');
 const { execSync, spawnSync } = require('child_process');
 const xdg = require('@folder/xdg');
 const homedir = require('os').homedir();
+const Database = require('better-sqlite3');
+
 
 const yargs = require('yargs');
 yargs().help(false);
@@ -71,6 +75,7 @@ const {
 	DEFAULT_INFO_FORMAT,
 	HOME,
 	AUTOSAVE,
+	AUTOSAVE_PHOTO,
 	EDITOR,
 	PHONE_TEST
 } = process.env;
@@ -93,6 +98,8 @@ const typeColour = v => {
 		case "number":
 		case "bigint":
 		case "object":
+			if (v === null)
+				return "\x1b[31m";
 			return "\x1b[36m";
 		case "string":
 			const b = v.toLowerCase();
@@ -123,6 +130,49 @@ function colourAuto(out) {
 
 const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
 
+function getFileHash(filePath) {
+	return new Promise((resolve, reject) => {
+		const hash = crypto.createHash('sha256');
+		const stream = fs.createReadStream(filePath);
+		stream.on('data', chunk => hash.update(chunk));
+		stream.on('end', () => resolve(hash.digest('hex')));
+		stream.on('error', reject);
+	});
+}
+
+async function removeDuplicateFiles(folder) {
+	const files = fs.readdirSync(folder);
+	const fileHashes = {};
+
+	for (const file of files) {
+		const fullPath = path.join(folder, file);
+		const stats = fs.statSync(fullPath);
+
+		if (!stats.isFile()) continue;
+
+		const hash = await getFileHash(fullPath);
+
+		if (fileHashes[hash]) {
+			const existing = fileHashes[hash];
+
+			// console.log(hash)
+			// console.log(fileHashes);
+
+			// Compare modification times — keep the oldest
+			// if (existing) {
+				if (stats.mtimeMs < existing.mtimeMs) {
+					fs.unlinkSync(existing.path);
+					// fileHashes[hash] = { path: fullPath, mtimeMs: stats.mtimeMs };
+				} else {
+					fs.unlinkSync(fullPath);
+				}
+			// }
+		} else {
+			fileHashes[hash] = { path: fullPath, mtimeMs: stats.mtimeMs };
+		}
+	}
+}
+
 async function main() {
 	try {
 		const { cache } = xdg();
@@ -133,8 +183,8 @@ async function main() {
 		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
 			console.log(`\x1b[0;4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m [options] \x1b[1mphone\x1b[0m
 
-  -p --photo        Download photo
-  -s --[no-]save    Save all user data (implies photo) into '${pathSave}' (autosave: \x1b[1m${/^true|yes|1$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
+  -p --photo        Download photo into '${pathSave}'
+  -s --[no-]save    Save user info and photo (autosave: \x1b[1m${/^true|yes|1$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
   -f --format={ text | json }
                     Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
   -c --[no-]colour  No colour (only usable in 'text' format for stdout)
@@ -192,27 +242,62 @@ async function main() {
 			}
 			const phone = formatPhone(argv.test === true && PHONE_TEST ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
-			// console.log(argv.force !== true, pathPhone+"/", fs.existsSync(pathPhone + "/"))
-			if (argv.force !== true && fs.existsSync(pathPhone + "/")) {
-				if (fs.existsSync(pathPhone + "/info.txt")) {
-					const data = fs.readFileSync(pathPhone + "/info.txt");
-					if (data.length != 0) {
-						console.log(colourAuto(data.toString()));
-						return 0;
-					}
-				} else if (fs.existsSync(pathPhone + "/info.json")) {
-					const data = fs.readFileSync(pathPhone + "/info.json");
-					if (data.length != 0) {
-						console.log(colourAuto(data.toString()));
+
+			const db = new Database(pathSave + '/saved.db');
+
+			if (argv.force !== true) {
+				try {
+					const stmt = db.prepare("SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE wa.rawPhone = ?").bind(phone);
+					const rows = stmt.all();
+					if (rows.length !== 0) {
+						const user = rows[0];
+						// console.log(typeof user.bot)
+						console.log(`  Type:          ${typeColour(user.type)}${user.type || false}\x1b[0m
+  Bot:           ${typeColour(user.bot)}${user.bot || false}\x1b[0m
+  Verified:      ${typeColour(user.verified)}${user.verified || false}\x1b[0m
+  Restricted:    ${typeColour(user.restricted)}${user.restricted || false}\x1b[0m
+  Premium:       ${typeColour(user.premium)}${user.premium || false}\x1b[0m
+  Support:       ${typeColour(user.support)}${user.support || false}\x1b[0m
+  Scam:          ${typeColour(user.scam)}${user.scam || false}\x1b[0m
+  Fake:          ${typeColour(user.fake)}${user.fake || false}\x1b[0m
+
+  Name:          ${colour(NAME_COLOUR)}${user.name || ""}\x1b[0m
+  First name:    ${colour(NAME_COLOUR)}${user.firstName || ""}\x1b[0m
+  Last name:     ${colour(NAME_COLOUR)}${user.lastName || ""}\x1b[0m
+  Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
+  Username:      ${colour(NAME_COLOUR)}${user.username || ""}\x1b[0m
+
+  Picture:       ${fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length} saved
+  Phone:         ${typeColour(user.rawPhone)}${user.rawPhone || ""}\x1b[0m
+  Formatted:     ${typeColour(user.formattedPhone)}${user.formattedPhone || ""}\x1b[0m
+  About:         ${colour("33")}${user.about || ""}\x1b[0m
+  Emoji status:  ${colour("33")}${user.emojiStatus || ""}\x1b[0m
+  Color:         ${colour("32")}${user.color || ""}\x1b[0m
+  Profile color: ${colour("32")}${user.profileColor || ""}\x1b[0m
+  Language:      ${colour("32")}${user.langCode || ""}\x1b[0m
+  Last activity: ${typeof user.lastActivity === "number" ? colour("35") + new Date(user.lastActivity * 1000) : "\x1b[3mUnknown"}\x1b[0m
+`);
 						return 0;
 					}
 				}
+				catch (err) {
+					console.log(err);
+				}
 			}
+			// return 0;
 
 			if (argv.s)
 				argv.save = true;
 			else if (argv.save === undefined)
 				argv.save = /^true|yes|1$/i.test(AUTOSAVE);
+
+			if (argv.save)
+				argv.photo = true;
+
+			// if (argv.p)
+			// 	argv.photo = true;
+			// else if (argv.photo === undefined)
+			// 	argv.photo = /^true|yes|1$/i.test(AUTOSAVE_PHOTO);
 
 			if (argv.save !== false || argv.p || argv.photo) {
 				argv.photo = true;
@@ -238,22 +323,12 @@ async function main() {
 				dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
 			}
 
-			// console.log(pathToken);
-
-			// console.log(argv.api);
 			if (argv.api === undefined || ["all", "wa"].includes(argv.api)) {
-				// Was saved here until version 1.0.6
-				// TODO: Remove in version 2.0
-				if (fs.existsSync(`${HOME}/.local/share/${prog}/auth`)) {
-					fs.mkdirSync(pathToken, { recursive: true });
-					fs.renameSync(`${HOME}/.local/share/${prog}/auth`, pathToken);
-					fs.rmdirSync(`${HOME}/.local/share/${prog}`);
-				}
 				const client = await new Promise(resolve => {
 					// console.log(pathToken, argv)
 					if (!fs.existsSync(pathToken) && argv.nonInteractive === true)
 						return resolve(null);
-					
+
 					try {
 						const waclient = new WhatsApp.Client({
 							authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
@@ -317,36 +392,54 @@ async function main() {
 
 						if (!user.name && !user.pushname && !user.shortName && !picture && !about && typeof chat?.timestamp !== "number")
 							printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m Phone not occupied`);
-						else if (format === "text") {
-							printText(`\r${colour("1;4")}WhatsApp:\x1b[0m
+						else {
+							if (format === "text") {
+								printText(`\r${colour("1;4")}WhatsApp:\x1b[0m
   Type:          ${user.isBusiness ? "Business" : (user.isEnterprise ? "Enterprise" : (user.isUser ? "User" : "Unknown"))}
 
   Name:          ${colour(NAME_COLOUR)}${user.name || ""}\x1b[0m
-  Shortname:     ${colour(NAME_COLOUR)}${user.shortName || ""}\x1b[0m
   Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
 
-  Picture:       ${picture.value || ""}
+  Picture:       ${picture.value || "None"}, ${fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length} saved
   Phone:         ${typeColour(number)}${number.value || ""}\x1b[0m
   About:         ${colour("33")}${about.value || ""}\x1b[0m
-  Last activity: ${typeof chat.value?.timestamp === "number" ? colour("35") + new Date(chat.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
+  Last activity: ${typeof chat.value?.timestamp === "number" ? colour("35") + new Date(chat.value?.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
 `);
-						}
-						else {
+							}
 							dataJson.whatsapp = {
 								type: user.isBusiness ? "Business" : user.isUser ? "User" : null,
-								name: user.name || "",
-								shortname: user.shortName || "",
-								pushname: user.pushname || "",
-								picture: picture || "",
-								phone: number || "",
-								about: about || "",
-								lastActivity: typeof chat?.timestamp === "number" ? new Date(chat.timestamp * 1000) : null
+								rawPhone: phone,
+								formattedPhone: number.value,
+								name: user.name,
+								// shortname: user.shortName,
+								pushname: user.pushname,
+								picture: picture.value,
+								about: about.value,
+								lastActivity: chat.value?.timestamp
+							};
+
+							if (argv.save === true) {
+								const data = Object.fromEntries(Object.entries(dataJson.whatsapp).filter(([_, v]) => v != null));
+								delete data.picture;
+								const dataLength = Object.keys(data).length;
+
+								if (dataLength !== 0) {
+									db.exec("CREATE TABLE IF NOT EXISTS whatsapp(id INTEGER PRIMARY KEY AUTOINCREMENT, rawPhone TEXT UNIQUE, formattedPhone TEXT, type TEXT, name TEXT, pushname TEXT, about TEXT, lastActivity DATE)");
+									db.prepare(`
+										INSERT INTO whatsapp(${Object.keys(data).join(',')})
+											VALUES(${Object.keys(data).map(v => '?').join(',')})
+										ON CONFLICT (rawPhone)
+											DO UPDATE SET ${Object.keys(data).map(v => v + '=?').join(',')}
+									`).run(...Object.values(data), ...Object.values(data));
+								}
 							}
-						}
-						if (argv.photo && typeof picture === "string") {
-							const res = await new Promise(r => download(picture, `${pathPhone}/whatsapp.${picture.split('?', 2)[0].split('.').pop()}`, r));
-							if (res instanceof Error)
-								throw res;
+							if (argv.photo && typeof picture === "string") {
+								const filepath = `${pathPhone}/whatsapp-${(new Date()).toISOString()}.${picture.split('?', 2)[0].split('.').pop()}`
+								const res = await new Promise(r => download(picture, filepath, r));
+								if (res instanceof Error)
+									throw res;
+								await removeDuplicateFiles(pathPhone);
+							}
 						}
 					}
 					client.removeAllListeners();
@@ -404,9 +497,13 @@ async function main() {
 						if (tg !== undefined)
 							tg.users = await Telegram.photo.get(client, tg.users);
 
+						// console.log(tg.users)
 						if (format === "text") {
 							printText(`${colour("1;4")}Telegram:\x1b[0m`);
 							const multipleAccount = tg.users.length !== 1;
+							if (multipleAccount)
+								console.warn("Multiple Telegram account. Nyx 2 cannot save multiple accounts");
+
 							const pad = multipleAccount ? "    " : "  ";
 							for (let i = 0; i < tg.users.length; ++i) {
 								const {
@@ -445,46 +542,96 @@ ${pad}Picture:       ${typeColour(Telegram.photo.isAvailable(photo))}${Telegram.
 ${pad}Phone:         ${typeColour(phoneNumber)}${phoneNumber || ""}\x1b[0m
 ${pad}Language:      ${colour("32")}${langCode || ""}\x1b[0m
 ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) : "\x1b[3mUnknown"}\x1b[0m`);
-								if (argv.photo && Telegram.photo.isAvailable(photo))
-									fs.writeFileSync(`${pathPhone}/telegram-${i}.jpg`, photo);
+								if (argv.photo && Telegram.photo.isAvailable(photo)) {
+									fs.writeFileSync(`${pathPhone}/telegram-${(new Date()).toISOString()}-${i}.jpg`, photo);
+									await removeDuplicateFiles(pathPhone);
+								}
 							}
 						}
-						else {
-							dataJson.telegram = tg.users.map(user => {
-								const {
-									className,
-									verified,
-									restricted,
-									premium,
-									storiesHidden,
-									botBusiness,
-									firstName,
-									lastName,
-									username,
-									phone: __phone,
-									photo,
-									restrictionReason,
-									langCode,
-									status
-								} = user;
-								const { wasOnline } = status || { wasOnline: null };
-								return {
-									className,
-									verified,
-									restricted,
-									premium,
-									storiesHidden,
-									botBusiness,
-									firstName,
-									lastName,
-									username,
-									phone: __phone,
-									photo: Telegram.photo.isAvailable(photo),
-									restrictionReason,
-									lang: langCode,
-									lastActivity: new Date(wasOnline * 1000)
-								};
-							})
+						dataJson.telegram = tg.users.map(user => {
+							const {
+								className,
+								bot,
+								verified,
+								restricted,
+								support,
+								scam,
+								fake,
+								premium,
+								storiesHidden,
+								botBusiness,
+								firstName,
+								lastName,
+								username,
+								phone: __phone,
+								photo,
+								restrictionReason,
+								langCode,
+								status
+							} = user;
+							const { wasOnline } = status || { wasOnline: null };
+							return {
+								className,
+								bot,
+								verified,
+								restricted,
+								support,
+								scam,
+								fake,
+								premium,
+								storiesHidden,
+								botBusiness,
+								firstName,
+								lastName,
+								username,
+								phone: __phone,
+								photo: Telegram.photo.isAvailable(photo),
+								restrictionReason,
+								langCode,
+								lastActivity: wasOnline
+							};
+						});
+
+						if (argv.save === true) {
+							for (const user of dataJson.telegram) {
+								const data = Object.fromEntries(Object.entries(user).filter(([_, v]) => v != null));
+								delete data.photo;
+								const dataLength = Object.keys(data).length;
+
+								if (dataLength !== 0) {
+									db.exec(`CREATE TABLE IF NOT EXISTS telegram(
+										id INTEGER PRIMARY KEY AUTOINCREMENT,
+										phone TEXT UNIQUE,
+										className TEXT,
+										bot BOOLEAN,
+										verified BOOLEAN,
+										restricted BOOLEAN,
+										restrictionReason TEXT,
+										support BOOLEAN,
+										scam BOOLEAN,
+										fake BOOLEAN,
+										premium BOOLEAN,
+										storiesHidden BOOLEAN,
+										botBusiness BOOLEAN,
+										firstName TEXT,
+										lastName TEXT,
+										username TEXT,
+										emojiStatus TEXT,
+										color TEXT,
+										profileColor TEXT,
+										langCode TEXT,
+										lastActivity DATE
+									)`);
+									// console.log(data);
+									const dataValues = Object.values(data).map(v => typeof v === "boolean" ? parseInt(v) : v);
+									db.prepare(`
+									INSERT INTO telegram(${Object.keys(data).join(',')})
+										VALUES(${Object.keys(data).map(v => '?').join(',')})
+									ON CONFLICT (phone)
+										DO UPDATE SET ${Object.keys(data).map(v => v + '=?').join(',')}
+								`).run(...dataValues, ...dataValues);
+								}
+							}
 						}
 					}
 					catch (e) {
@@ -500,11 +647,6 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 			// console.log("${colour("1;32")}Done.\x1b[0m");
 			if (format === "json")
 				console.log(JSON.stringify(dataJson));
-			if (argv.save === true) {
-				const data = (format === "text" ? dataText : JSON.stringify(dataJson)).replace(/\x1b\[[\d;]+m/g, '').trim();
-				if (data.length > 70)
-					fs.writeFileSync(`${pathPhone}/info.${format === "text" ? "txt" : "json"}`, data);
-			}
 		}
 		return 0;
 	}
