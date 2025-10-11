@@ -8,13 +8,13 @@ env_test="./.env.test"
 
 
 sqlite_exec() {
-	echo ".exit" | sqlite3 "$HOME/nyx-lookup/saved.db" -cmd "$1"
+	echo ".exit" | sqlite3 "$HOME/nyx-lookup/saved.db" -cmd "$1" || true
 }
 sqlite_delete() {
-	sqlite_exec "DELETE FROM whatsapp WHERE rawPhone = '$1'; DELETE FROM telegram WHERE phone = '$1';" || true
+	sqlite_exec "DELETE FROM whatsapp WHERE rawPhone = '$1'; DELETE FROM telegram WHERE phone = '$1';"
 }
 sqlite_select() {
-	sqlite_exec "SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE tg.phone = '$1';" || true
+	sqlite_exec "SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE tg.phone = '$1';"
 }
 
 
@@ -23,6 +23,7 @@ sleep_random() {
 	sleep 2.6
 }
 
+touch "$HOME/nyx-lookup/saved.db"
 
 @test "env" {
 	[ -f ".env" ]
