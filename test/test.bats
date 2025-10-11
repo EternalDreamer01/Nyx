@@ -16,7 +16,7 @@ sqlite_delete() {
 }
 sqlite_select() {
 	# sqlite_exec "SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE tg.phone = '$1';"
-	sqlite_exec "SELECT * FROM telegram  WHERE tg.phone = '$1';"
+	sqlite_exec "SELECT * FROM telegram WHERE phone = '$1';"
 }
 
 
