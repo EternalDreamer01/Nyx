@@ -23,6 +23,7 @@ sleep_random() {
 	sleep 2.6
 }
 
+mkdir -p "$HOME/nyx-lookup"
 touch "$HOME/nyx-lookup/saved.db"
 
 @test "env" {
