@@ -22,7 +22,7 @@
 	"dependencies": {
 		"@folder/xdg": "^4.0.1",
 		"better-sqlite3": "^12.4.1",
-		"dotenv": "^16.5.0",
+		"dotenv": "^17.2.3",
 		"input": "^1.0.1",
 		"qrcode-terminal": "^0.12.0",
 		"request": "^2.88.2",
