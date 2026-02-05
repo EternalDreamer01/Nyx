@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 
-require('dotenv').config({ path: __dirname + '/.env' })
+require('dotenv').config({
+	path: __dirname + '/.env',
+	quiet: true
+})
 
 const { Api: TelegramApi, TelegramClient, Logger: TelegramLogger } = require("telegram");
 const { StringSession } = require("telegram/sessions/index.js");
 const input = require("input");
 const WhatsApp = require("whatsapp-web.js");
 const QRCcode = require("qrcode-terminal");
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const request = require('request');
+// const request = require('request');
 const { execSync, spawnSync } = require('child_process');
 const xdg = require('@folder/xdg');
 const homedir = require('os').homedir();
@@ -45,26 +49,14 @@ const Telegram = {
 
 const download = (url, dest, cb) => {
 	const file = fs.createWriteStream(dest);
-	const sendReq = request.get(url);
 
-	// verify response code
-	sendReq.on('response', (response) => {
-		if (response.statusCode !== 200) {
-			return cb('Response status was ' + response.statusCode);
-		}
-		sendReq.pipe(file);
-	});
-
-	// close() is async, call cb after close completes
-	file.on('finish', () => file.close(cb));
-
-	// check for request errors
-	sendReq.on('error', (err) => {
-		fs.unlink(dest, () => cb(err)); // delete the (partial) file and then return the error
-	});
-
-	file.on('error', (err) => { // Handle errors
-		fs.unlink(dest, () => cb(err)); // delete the (partial) file and then return the error
+	http.get(url, (response) => {
+		response.pipe(file);
+		file.on('finish', () => {
+			file.close(cb)
+		});
+	}).on('error', (err) => {
+		fs.unlink(dest, cb(err));
 	});
 };
 
@@ -281,7 +273,9 @@ async function main() {
 					}
 				}
 				catch (err) {
-					console.log(err);
+					if (!err.message.toLowerCase().includes("not such table")) {
+						console.error(err);
+					}
 				}
 			}
 			// return 0;
