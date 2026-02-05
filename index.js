@@ -165,6 +165,44 @@ async function removeDuplicateFiles(folder) {
 	}
 }
 
+function create_table_whatsapp(db) {
+	db.execSync(`CREATE TABLE IF NOT EXISTS whatsapp(
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		rawPhone TEXT UNIQUE,
+		formattedPhone TEXT,
+		type TEXT,
+		name TEXT,
+		pushname TEXT,
+		about TEXT,
+		lastActivity DATE
+	)`);
+}
+
+function create_table_telegram(db) {
+	db.execSync(`CREATE TABLE IF NOT EXISTS telegram(
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		phone TEXT UNIQUE,
+		className TEXT,
+		bot BOOLEAN,
+		verified BOOLEAN,
+		restricted BOOLEAN,
+		restrictionReason TEXT,
+		support BOOLEAN,
+		scam BOOLEAN,
+		fake BOOLEAN,
+		premium BOOLEAN,
+		storiesHidden BOOLEAN,
+		botBusiness BOOLEAN,
+		firstName TEXT,
+		lastName TEXT,
+		username TEXT,
+		emojiStatus TEXT,
+		color TEXT,
+		profileColor TEXT,
+		langCode TEXT,
+		lastActivity DATE
+	)`);
+}
 async function main() {
 	try {
 		const { cache } = xdg();
@@ -236,9 +274,11 @@ async function main() {
 			const pathPhone = `${pathSave}/${phone}`;
 
 			const db = new Database(pathSave + '/saved.db');
-
+			
 			if (argv.force !== true) {
 				try {
+					create_table_whatsapp(db);
+					create_table_telegram(db);
 					const stmt = db.prepare("SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE wa.rawPhone = ?").bind(phone);
 					const rows = stmt.all();
 					if (rows.length !== 0) {
@@ -418,7 +458,7 @@ async function main() {
 								const dataLength = Object.keys(data).length;
 
 								if (dataLength !== 0) {
-									db.exec("CREATE TABLE IF NOT EXISTS whatsapp(id INTEGER PRIMARY KEY AUTOINCREMENT, rawPhone TEXT UNIQUE, formattedPhone TEXT, type TEXT, name TEXT, pushname TEXT, about TEXT, lastActivity DATE)");
+									create_table_whatsapp(db);
 									db.prepare(`
 										INSERT INTO whatsapp(${Object.keys(data).join(',')})
 											VALUES(${Object.keys(data).map(v => '?').join(',')})
@@ -593,29 +633,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 								const dataLength = Object.keys(data).length;
 
 								if (dataLength !== 0) {
-									db.exec(`CREATE TABLE IF NOT EXISTS telegram(
-										id INTEGER PRIMARY KEY AUTOINCREMENT,
-										phone TEXT UNIQUE,
-										className TEXT,
-										bot BOOLEAN,
-										verified BOOLEAN,
-										restricted BOOLEAN,
-										restrictionReason TEXT,
-										support BOOLEAN,
-										scam BOOLEAN,
-										fake BOOLEAN,
-										premium BOOLEAN,
-										storiesHidden BOOLEAN,
-										botBusiness BOOLEAN,
-										firstName TEXT,
-										lastName TEXT,
-										username TEXT,
-										emojiStatus TEXT,
-										color TEXT,
-										profileColor TEXT,
-										langCode TEXT,
-										lastActivity DATE
-									)`);
+									create_table_telegram(db);
 									// console.log(data);
 									const dataValues = Object.values(data).map(v => typeof v === "boolean" ? parseInt(v) : v);
 									db.prepare(`
