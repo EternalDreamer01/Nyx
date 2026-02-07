@@ -68,7 +68,7 @@ Raw format is digits only (e.g `61491570006`) however, you may optionally specif
 $ nyx-lookup "+44 808 157 0192"
 $ nyxl 448081570192
 ```
-```rb
+```
 $ nyx-lookup
 Usage: nyx-lookup [options] phone
 
