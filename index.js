@@ -10,7 +10,7 @@ const { StringSession } = require("telegram/sessions/index.js");
 const input = require("input");
 const WhatsApp = require("whatsapp-web.js");
 const QRCcode = require("qrcode-terminal");
-const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -50,7 +50,7 @@ const Telegram = {
 const download = (url, dest, cb) => {
 	const file = fs.createWriteStream(dest);
 
-	http.get(url, (response) => {
+	https.get(url, (response) => {
 		response.pipe(file);
 		file.on('finish', () => {
 			file.close(cb)
@@ -166,7 +166,7 @@ async function removeDuplicateFiles(folder) {
 }
 
 function create_table_whatsapp(db) {
-	db.execSync(`CREATE TABLE IF NOT EXISTS whatsapp(
+	db.exec(`CREATE TABLE IF NOT EXISTS whatsapp(
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		rawPhone TEXT UNIQUE,
 		formattedPhone TEXT,
@@ -179,7 +179,7 @@ function create_table_whatsapp(db) {
 }
 
 function create_table_telegram(db) {
-	db.execSync(`CREATE TABLE IF NOT EXISTS telegram(
+	db.exec(`CREATE TABLE IF NOT EXISTS telegram(
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		phone TEXT UNIQUE,
 		className TEXT,
@@ -203,6 +203,7 @@ function create_table_telegram(db) {
 		lastActivity DATE
 	)`);
 }
+
 async function main() {
 	try {
 		const { cache } = xdg();
@@ -407,6 +408,7 @@ async function main() {
 						resolve(e);
 					}
 				});
+				
 				if (client === null)
 					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m No session found`);
 				else {
@@ -458,6 +460,7 @@ async function main() {
 								const dataLength = Object.keys(data).length;
 
 								if (dataLength !== 0) {
+									// console.log(data)
 									create_table_whatsapp(db);
 									db.prepare(`
 										INSERT INTO whatsapp(${Object.keys(data).join(',')})
@@ -467,9 +470,10 @@ async function main() {
 									`).run(...Object.values(data), ...Object.values(data));
 								}
 							}
-							if (argv.photo && typeof picture === "string") {
-								const filepath = `${pathPhone}/whatsapp-${(new Date()).toISOString()}.${picture.split('?', 2)[0].split('.').pop()}`
-								const res = await new Promise(r => download(picture, filepath, r));
+							// console.log(argv, picture.value);
+							if (argv.photo && typeof picture.value === "string") {
+								const filepath = `${pathPhone}/whatsapp-${(new Date()).toISOString()}.${picture.value.split('?', 2)[0].split('.').pop()}`
+								const res = await new Promise(r => download(picture.value, filepath, r));
 								if (res instanceof Error)
 									throw res;
 								await removeDuplicateFiles(pathPhone);

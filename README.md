@@ -49,10 +49,12 @@ git clone --recurse-submodules -j4 https://github.com/EternalDreamer01/Nyx.git
 
 ### Setup Inspected Applications
 
-| API | Information | Login | Session location |
+| API | Information | Login* | Session location |
 |-|-|-|-|
 | WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / pushname](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%LocalAppData%`</td></tr><tr><td>Linux</td><td>`~/.cache`</td></tr><tr><td>macOS</td><td>`~/Library/Caches`</td></tr></tbody></table> |
 | Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
+
+* You must login to use their API
 
 ## Usage
 
@@ -66,7 +68,7 @@ Raw format is digits only (e.g `61491570006`) however, you may optionally specif
 $ nyx-lookup "+44 808 157 0192"
 $ nyxl 448081570192
 ```
-```
+```rb
 $ nyx-lookup
 Usage: nyx-lookup [options] phone
 
@@ -93,11 +95,16 @@ Usage: nyx-lookup [options] phone
     Telegram: ✔
 ```
 
-### Technical notes
+### Variables
 
-#### Database
+Editable using `nyx-lookup -e` ;
 
-The database of saved results is accessible at `/home/<user>/nyx-lookup/saved.db`.
+| Variable | Description | Default | Possible values |
+|-|-|-|-|
+| `DEFAULT_INFO_FORMAT` | Default output format | `text` | `text` or `json` |
+| `AUTOSAVE` | Enable/disable autosave (`~/nyx-lookup/saved.db`) | `true` | `true`, `false`, `yes`, `no`, `1`, `0` |
+
+The database of saved results is accessible at `~/nyx-lookup/saved.db`.
 To enable/disable autosave, run `nyx-lookup -e` and edit `AUTOSAVE`.
 
 ## FAQ
@@ -155,18 +162,6 @@ npm uninstall -g nyx-lookup
 npm install -g nyx-lookup
 ```
 
-## Known Issues
-At the moment, `whatsapp-web.js` depends on a vulnerable version of `puppeteer`, see `npm audit` for more information.
-
-### Unavailable Reverse Phone Lookup
-
-* Signal
-* LINE
-* Viber
-* Messenger
-* WeChat
-* Kakao Talk
-
 ## TODO
 
 - Prevent Blacklist
@@ -180,6 +175,16 @@ At the moment, `whatsapp-web.js` depends on a vulnerable version of `puppeteer`,
 	- Breached databases
 	- [Truecaller](https://github.com/sumithemmadi/truecallerjs)
 - Add unit tests for json
+
+### Unavailable Reverse Phone Lookup
+
+* Signal
+* LINE
+* Viber
+* Messenger
+* WeChat
+* Kakao Talk
+
 
 ## Contributing
 
