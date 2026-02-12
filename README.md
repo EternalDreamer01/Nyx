@@ -18,7 +18,6 @@ Please read [Disclaimer](#disclaimer) and [Are there any risk ?](#are-there-any-
 	* [Are there any risk ?](#are-there-any-risk-)
 	* [Is it legal ?](#is-it-legal-)
 	* [What's the difference between "name" and "pushname" ?](#whats-the-difference-between-name-and-pushname-)
-2. [Known Issues](#known-issues)
 
 
 ## Disclaimer
@@ -134,7 +133,9 @@ Waiting at least a few seconds between each call, at an irregular frequency.
 Use a prepaid SIM card to prevent such situations.
 
 ### Is it legal ?
-It's legal to view publicly available information. However, scraping would violate Terms of Use of WhatsApp and Telegram and could result in a permanent suspension.
+It's legal to view publicly or freely available information, when the user is aware of this feature and consented to it.
+However, scraping would be considered a privacy violation in many jurisdiction (including EU and US), and would violate Terms of Use of WhatsApp and Telegram.
+Doing so could result in a permanent suspension, and a criminal penalty.
 
 ### What's the difference between "name" and "pushname" ?
 |||
