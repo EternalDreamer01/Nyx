@@ -66,6 +66,8 @@ const {
 	API_TELEGRAM_HASH,
 	DEFAULT_INFO_FORMAT,
 	HOME,
+	DEFAULT_API,
+	DEFAULT_COLOUR,
 	AUTOSAVE,
 	AUTOSAVE_PHOTO,
 	EDITOR,
@@ -75,7 +77,10 @@ const {
 const prog = "nyx-lookup";
 const editor = EDITOR || "vim";
 
-const displayColour = argv.colour !== false;
+const str2bool = s => /^true|yes|1$/i.test(s);
+const str2yn = s => str2bool(s) ? "yes" : "no";
+
+const displayColour = argv.colour !== false && str2bool(DEFAULT_COLOUR);
 const colour = (...args) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
 
 const NAME_COLOUR = "34";
@@ -215,14 +220,14 @@ async function main() {
 			console.log(`\x1b[0;4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m [options] \x1b[1mphone\x1b[0m
 
   -p --photo        Download photo into '${pathSave}'
-  -s --[no-]save    Save user info and photo (autosave: \x1b[1m${/^true|yes|1$/i.test(AUTOSAVE) ? "yes" : "no"}\x1b[0m)
+  -s --[no-]save    Save user info and photo (autosave: \x1b[1m${str2yn(AUTOSAVE)}\x1b[0m)
   -f --format={ text | json }
                     Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
-  -c --[no-]colour  No colour (only usable in 'text' format for stdout)
+  -c --[no-]colour  No colour (only for 'text' format) (default \x1b[1m${str2yn(DEFAULT_COLOUR)}\x1b[0m)
   -e --env          Edit env file (default editor: \x1b[1m${editor}\x1b[0m)
-     --clean        Clean up sessions (simple unlink/edit)
+     --clean        Delete WhatsApp's session
      --api={ wa | tg | all }
-                    API service to use
+                    API service to use (default: \x1b[1m${DEFAULT_API}\x1b[0m)
      --force        Force query, do not use cached data.
 
      --non-interactive
@@ -271,6 +276,10 @@ async function main() {
 				// Is WhatsApp possible ?
 				argv.api = "tg";
 			}
+			if (argv.api === undefined)
+				argv.api = DEFAULT_API.toLowerCase();
+			// console.log(argv.api);
+
 			const phone = formatPhone(argv.test === true && PHONE_TEST ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
 
@@ -324,7 +333,7 @@ async function main() {
 			if (argv.s)
 				argv.save = true;
 			else if (argv.save === undefined)
-				argv.save = /^true|yes|1$/i.test(AUTOSAVE);
+				argv.save = str2bool(AUTOSAVE);
 
 			if (argv.save)
 				argv.photo = true;
@@ -332,7 +341,7 @@ async function main() {
 			// if (argv.p)
 			// 	argv.photo = true;
 			// else if (argv.photo === undefined)
-			// 	argv.photo = /^true|yes|1$/i.test(AUTOSAVE_PHOTO);
+			// 	argv.photo = str2bool(AUTOSAVE_PHOTO);
 
 			if (argv.save !== false || argv.p || argv.photo) {
 				argv.photo = true;
@@ -358,7 +367,7 @@ async function main() {
 				dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
 			}
 
-			if (argv.api === undefined || ["all", "wa"].includes(argv.api)) {
+			if (["all", "wa"].includes(argv.api)) {
 				const client = await new Promise(resolve => {
 					// console.log(pathToken, argv)
 					if (!fs.existsSync(pathToken) && argv.nonInteractive === true)
@@ -486,7 +495,7 @@ async function main() {
 				// spinner.succeed("");
 			}
 
-			if (argv.api === undefined || ["all", "tg"].includes(argv.api)) {
+			if (["all", "tg"].includes(argv.api)) {
 				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) && argv.nonInteractive === true)
 					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m No session found`);
 				else {
