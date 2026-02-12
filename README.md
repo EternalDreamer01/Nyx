@@ -5,7 +5,7 @@
 Nyx is a **simple reverse phone lookup** ;
 that is, a tool to obtain information about the subscriber (owner) of the phone number.
 
-Please read [Disclaimer](#disclaimer) and [Are there any risk ?](#are-there-any-risk-).
+Please read [Disclaimer](#disclaimer), [is it legal ?](#is-it-legal-) and [Are there any risk ?](#are-there-any-risk-).
 
 *Note: This tool focus on the subscriber's information rather than the Mobile Network Operator (MNO)*
 
@@ -105,8 +105,11 @@ Editable using `nyx-lookup -e` ;
 
 | Variable | Description | Default | Possible values |
 |-|-|-|-|
+| `API_TELEGRAM_ID` | Telegram ID (required to use Telegram API) | *None* | |
+| `API_TELEGRAM_HASH` | Telegram Hash (required to use Telegram API) | *None* | |
 | `DEFAULT_INFO_FORMAT` | Default output format | `text` | `text` or `json` |
-| `AUTOSAVE` | Enable/disable autosave (`~/nyx-lookup/saved.db`) | `true` | `true`, `false`, `yes`, `no`, `1`, `0` |
+| `AUTOSAVE` | Enable/disable autosave (`~/nyx-lookup/saved.db`) | `true` | `true`/`false`, `yes`/`no`, `1`/`0` |
+| `PHONE_TEST` | Phone number to use for testing | *None* | |
 
 The database of saved results is accessible at `~/nyx-lookup/saved.db`.
 To enable/disable autosave, run `nyx-lookup -e` and edit `AUTOSAVE`.
