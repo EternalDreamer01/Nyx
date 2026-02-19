@@ -12,6 +12,7 @@
 	- Breached databases
 	- [Truecaller](https://github.com/sumithemmadi/truecallerjs)
 - Add unit tests for json
+- [Raise alert when one phone number created an account on Telegram](https://gram.js.org/tl/contacts/AddContact)
 
 ## Unavailable Reverse Phone Lookup
 
