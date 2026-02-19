@@ -26,7 +26,7 @@ This project is intended for educational and lawful purposes only. The primary g
 
 Users are expected to use this project responsibly and in compliance with applicable laws and regulations. Unauthorized use of this project for any malicious or illegal activities is strictly prohibited. The creators and contributors disclaim any responsibility for any misuse or damage caused by the use of this project for unauthorized and unlawful purposes.
 
-It is essential to respect the privacy and security of others and obtain explicit permission before attempting to access or modify any system or data. Any actions performed with the knowledge gained from this project should be conducted in an ethical manner, with a focus on enhancing cybersecurity awareness and promoting responsible use of technology.
+It is essential to respect the privacy and security of others and obtain explicit permission before attempting to access or modify any system or data. Any actions performed with the knowledge gained from this project should be conducted in an ethical manner, with a focus on enhancing cybersecurity/privacy awareness and promoting responsible use of technology.
 
 By using this project, you acknowledge and agree to abide by the principles outlined in this disclaimer. If you do not agree with these terms, you are not authorized to use or contribute to this project.
 
@@ -143,7 +143,11 @@ Use a prepaid SIM card to prevent such situations.
 ### Is it legal ?
 It's legal to view publicly or freely available information, when the user is aware of this feature and consented to it.
 However, scraping would be considered a privacy violation in many jurisdiction (including EU and US), and would violate Terms of Use of WhatsApp and Telegram.
+
 Doing so could result in a permanent suspension, and a criminal penalty.
+
+Moreover, the constant storage of this data could be considered a privacy violation (mainly for EU). You might consider editing `AUTOSAVE` and manage your cache yourself.
+You alone bear full responsibility for any misuse or damage resulting from the unauthorized or unlawful use of this project.
 
 ### What's the difference between "name" and "pushname" ?
 |||
@@ -170,30 +174,6 @@ Make sure you have the latest version of Nyx, or try reinstalling. If you instal
 npm uninstall -g nyx-lookup
 npm install -g nyx-lookup
 ```
-
-## TODO
-
-- Prevent Blacklist
-	- Latency between each call
-	- Define limit, warn after numerous calls
-- Data
-	- Do not show name, shortname, first/last name ?
-	- Show other WhatsApp's defined fields (labels, sectionHeader, verified)
-- More reverse phone lookup
-	- Allow multiple WhatsApp and Telegram accounts
-	- Breached databases
-	- [Truecaller](https://github.com/sumithemmadi/truecallerjs)
-- Add unit tests for json
-
-### Unavailable Reverse Phone Lookup
-
-* Signal
-* LINE
-* Viber
-* Messenger
-* WeChat
-* Kakao Talk
-
 
 ## Contributing
 
