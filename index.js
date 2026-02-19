@@ -157,12 +157,12 @@ async function removeDuplicateFiles(folder) {
 
 			// Compare modification times — keep the oldest
 			// if (existing) {
-				if (stats.mtimeMs < existing.mtimeMs) {
-					fs.unlinkSync(existing.path);
-					// fileHashes[hash] = { path: fullPath, mtimeMs: stats.mtimeMs };
-				} else {
-					fs.unlinkSync(fullPath);
-				}
+			if (stats.mtimeMs < existing.mtimeMs) {
+				fs.unlinkSync(existing.path);
+				// fileHashes[hash] = { path: fullPath, mtimeMs: stats.mtimeMs };
+			} else {
+				fs.unlinkSync(fullPath);
+			}
 			// }
 		} else {
 			fileHashes[hash] = { path: fullPath, mtimeMs: stats.mtimeMs };
@@ -179,8 +179,44 @@ function create_table_whatsapp(db) {
 		name TEXT,
 		pushname TEXT,
 		about TEXT,
-		lastActivity DATE
+		lastActivity DATE,
+		datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+		datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
+		datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`);
+
+	// TODO: remove in a later version
+	// That is to maintain portability between version 2.1.0 and 2.2.0
+	const alldata = db.prepare("SELECT 1 FROM pragma_table_info('whatsapp') WHERE name = 'datetimeCreated';").all();
+	// console.log(typeof alldata, alldata);
+	if (alldata.length == 0) {
+		db.exec(`CREATE TABLE IF NOT EXISTS whatsapp0(
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			rawPhone TEXT UNIQUE,
+			formattedPhone TEXT,
+			type TEXT,
+			name TEXT,
+			pushname TEXT,
+			about TEXT,
+			lastActivity DATE,
+			datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+			datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
+			datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
+		);
+		INSERT INTO whatsapp0(
+			id,
+			rawPhone,
+			formattedPhone,
+			type,
+			name,
+			pushname,
+			about,
+			lastActivity
+		) SELECT * FROM whatsapp;
+		DROP TABLE table whatsapp;
+		ALTER TABLE whatsapp0 rename to whatsapp;
+		`);
+	}
 }
 
 function create_table_telegram(db) {
@@ -205,8 +241,70 @@ function create_table_telegram(db) {
 		color TEXT,
 		profileColor TEXT,
 		langCode TEXT,
-		lastActivity DATE
+		lastActivity DATE,
+		datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+		datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
+		datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`);
+
+	// TODO: remove in a later version
+	// That is to maintain portability between version 2.1.0 and 2.2.0
+	const alldata = db.prepare("SELECT 1 FROM pragma_table_info('telegram') WHERE name = 'datetimeCreated';").all();
+	// console.log(typeof alldata, alldata);
+	if (alldata.length == 0) {
+		db.exec(`CREATE TABLE IF NOT EXISTS telegram0(
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			phone TEXT UNIQUE,
+			className TEXT,
+			bot BOOLEAN,
+			verified BOOLEAN,
+			restricted BOOLEAN,
+			restrictionReason TEXT,
+			support BOOLEAN,
+			scam BOOLEAN,
+			fake BOOLEAN,
+			premium BOOLEAN,
+			storiesHidden BOOLEAN,
+			botBusiness BOOLEAN,
+			firstName TEXT,
+			lastName TEXT,
+			username TEXT,
+			emojiStatus TEXT,
+			color TEXT,
+			profileColor TEXT,
+			langCode TEXT,
+			lastActivity DATE,
+			datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
+			datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
+			datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
+		);
+		INSERT INTO telegram0(
+			id,
+			phone,
+			className,
+			bot,
+			verified,
+			restricted,
+			restrictionReason,
+			support,
+			scam,
+			fake,
+			premium,
+			storiesHidden,
+			botBusiness,
+			firstName,
+			lastName,
+			username,
+			emojiStatus,
+			color,
+			profileColor,
+			langCode,
+			lastActivity
+		) SELECT * FROM telegram;
+		DROP TABLE table telegram;
+		ALTER TABLE telegram0 rename to telegram;
+		`);
+	}
 }
 
 async function main() {
@@ -229,6 +327,7 @@ async function main() {
      --api={ wa | tg | all }
                     API service to use (default: \x1b[1m${DEFAULT_API}\x1b[0m)
      --force        Force query, do not use cached data.
+     --db           Access database cache.
 
      --non-interactive
                     Will not ask to login if no session was found
@@ -253,6 +352,12 @@ async function main() {
 			if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
 				fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
 			spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
+		}
+		else if (argv.db) {
+			if (!fs.existsSync(pathSave + '/saved.db') || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
+				console.error("Error: Database does not exist");
+			else
+				spawnSync("sqlite3", [pathSave + '/saved.db'], { stdio: 'inherit' });
 		}
 		else if (argv.clean) {
 			fs.rmSync(pathToken, { recursive: true, force: true });
@@ -284,13 +389,24 @@ async function main() {
 			const pathPhone = `${pathSave}/${phone}`;
 
 			const db = new Database(pathSave + '/saved.db');
-			
+			db.pragma('journal_mode = WAL');
+
 			if (argv.force !== true) {
 				try {
 					create_table_whatsapp(db);
 					create_table_telegram(db);
-					const stmt = db.prepare("SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE wa.rawPhone = ?").bind(phone);
-					const rows = stmt.all();
+
+					let rows = [];
+					if (["all", "wa"].includes(argv.api)) {
+						rows = [...rows, db.prepare("SELECT * FROM whatsapp WHERE rawPhone = ?").bind(phone).all()];
+						db.prepare("UPDATE whatsapp SET datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
+					}
+					if (["all", "tg"].includes(argv.api)) {
+						rows = [...rows, db.prepare("SELECT * FROM telegram WHERE phone = ?").bind(phone).all()];
+						db.prepare("UPDATE telegram SET datetimeAccessed = time('now') WHERE phone = ?").run(phone);
+					}
+					// const stmt = db.prepare("SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE wa.rawPhone = ?").bind(phone);
+					// const rows = stmt.all();
 					if (rows.length !== 0) {
 						const user = rows[0];
 						// console.log(typeof user.bot)
@@ -319,6 +435,7 @@ async function main() {
   Language:      ${colour("32")}${user.langCode || ""}\x1b[0m
   Last activity: ${typeof user.lastActivity === "number" ? colour("35") + new Date(user.lastActivity * 1000) : "\x1b[3mUnknown"}\x1b[0m
 `);
+
 						return 0;
 					}
 				}
@@ -417,7 +534,7 @@ async function main() {
 						resolve(e);
 					}
 				});
-				
+
 				if (client === null)
 					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m No session found`);
 				else {
@@ -489,6 +606,8 @@ async function main() {
 							}
 						}
 					}
+					db.prepare("UPDATE whatsapp SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
+
 					client.removeAllListeners();
 					await client.destroy();
 				}
@@ -658,6 +777,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 								}
 							}
 						}
+						db.prepare("UPDATE telegram SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE phone = ?").run(phone);
 					}
 					catch (e) {
 						if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
