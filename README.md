@@ -7,7 +7,17 @@ that is, a tool to obtain information about the subscriber (owner) of the phone 
 
 Please read [Disclaimer](#disclaimer), [is it legal ?](#is-it-legal-) and [Are there any risk ?](#are-there-any-risk-).
 
-*Note: This tool focus on the subscriber's information rather than the Mobile Network Operator (MNO)*
+**When the features become the weaknesses...**
+
+Nyx aims to highlight the weaknesses of instant‑messaging apps and increase public awareness of them. These common features allow malicious actors to perform reverse phone lookups and harvest personal data associated with a phone number.
+These data include :
+* Username
+* Photo
+* Bio
+* Last activity
+* and more...
+
+## Table of contents 
 
 2. [Disclaimer](#disclaimer)
 2. [Install](#install)
