@@ -485,6 +485,7 @@ async function main() {
 			}
 
 			if (["all", "wa"].includes(argv.api)) {
+				db.prepare("UPDATE whatsapp SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
 				const client = await new Promise(resolve => {
 					// console.log(pathToken, argv)
 					if (!fs.existsSync(pathToken) && argv.nonInteractive === true)
@@ -606,7 +607,6 @@ async function main() {
 							}
 						}
 					}
-					db.prepare("UPDATE whatsapp SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
 
 					client.removeAllListeners();
 					await client.destroy();
@@ -615,6 +615,7 @@ async function main() {
 			}
 
 			if (["all", "tg"].includes(argv.api)) {
+				db.prepare("UPDATE telegram SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE phone = ?").run(phone);
 				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) && argv.nonInteractive === true)
 					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m No session found`);
 				else {
@@ -777,7 +778,6 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 								}
 							}
 						}
-						db.prepare("UPDATE telegram SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE phone = ?").run(phone);
 					}
 					catch (e) {
 						if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
