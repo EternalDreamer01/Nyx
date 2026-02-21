@@ -1,6 +1,6 @@
 {
 	"name": "nyx-lookup",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"description": "Reverse phone lookup, based on WhatsApp and Telegram",
 	"main": "./index.js",
 	"type": "commonjs",
@@ -48,5 +48,10 @@
 		"caller-lookup",
 		"who-called",
 		"caller-info"
-	]
+	],
+	"devDependencies": {
+		"@types/better-sqlite3": "^7.6.13",
+		"@types/qrcode-terminal": "^0.12.2",
+		"@types/yargs": "^17.0.35"
+	}
 }
