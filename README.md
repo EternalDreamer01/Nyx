@@ -5,7 +5,7 @@
 Nyx is a **simple reverse phone lookup** ;
 that is, a tool to obtain information about the subscriber (owner) of the phone number.
 
-Please read [Disclaimer](#disclaimer), [is it legal ?](#is-it-legal-) and [Are there any risk ?](#are-there-any-risk-).
+Please read [Disclaimer](#disclaimer), [Is it legal ?](#is-it-legal-) and [Are there any risk ?](#are-there-any-risk-).
 
 **When the features become the weaknesses...**
 
@@ -90,19 +90,22 @@ Usage: nyx-lookup [options] phone
   -s --[no-]save    Save user info and photo (autosave: yes)
   -f --format={ text | json }
                     Define output format (default: text)
-  -c --[no-]colour  No colour (only usable in 'text' format for stdout)
+  -c --[no-]colour  No colour (only for 'text' format) (default yes)
   -e --env          Edit env file (default editor: vim)
-     --clean        Clean up sessions (simple unlink/edit)
+     --api={ wa | tg | all }
+                    API service to use (default: all)
+     --force        Force query, do not use cached data.
+     --db           Access database cache.
+     --open-photos[=phone]
+                    Access cached photos.
+
      --non-interactive
                     Will not ask to login if no session was found
-     --api={ wa | tg | all }
-                    API service to use
-     --force        Force query, do not use cached data.
-
      --test         Test phone from env. variable PHONE_TEST
-  
-  -h  --help        Show this help
-  -v  --version     Show version
+                    Non-interactive is automatically true
+                    
+  -h --help        Show this help
+  -v --version     Show version
   
   Status:
     WhatsApp: ✔
