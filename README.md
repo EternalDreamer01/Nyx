@@ -90,7 +90,7 @@ Usage: nyx-lookup [options] phone
   -s --[no-]save    Save user info and photo (autosave: yes)
   -f --format={ text | json }
                     Define output format (default: text)
-  -c --[no-]colour  No colour (only for 'text' format) (default yes)
+  -c --[no-]colour  No colour (only for 'text' format) (default: yes)
   -e --env          Edit env file (default editor: vim)
      --api={ wa | tg | all }
                     API service to use (default: all)
