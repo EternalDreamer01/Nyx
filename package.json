@@ -3,7 +3,7 @@
 	"version": "2.2.0",
 	"description": "Reverse phone lookup, based on WhatsApp and Telegram",
 	"main": "./index.js",
-	"type": "commonjs",
+	"type": "module",
 	"bin": {
 		"nyx-lookup": "index.js",
 		"nyxl": "index.js"
@@ -27,6 +27,7 @@
 		"qrcode-terminal": "^0.12.0",
 		"telegram": "^2.26.22",
 		"whatsapp-web.js": "^1.34.6",
+		"which": "^6.0.1",
 		"yargs": "^18.0.0"
 	},
 	"repository": {
@@ -52,6 +53,7 @@
 	"devDependencies": {
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/qrcode-terminal": "^0.12.2",
+		"@types/which": "^3.0.4",
 		"@types/yargs": "^17.0.35"
 	}
 }

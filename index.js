@@ -1,65 +1,27 @@
 #!/usr/bin/env node
 
-require('dotenv').config({
-	path: __dirname + '/.env',
-	quiet: true
-})
+import { colour, typeColour, COLOUR, str2bool } from "./src/utils.js";
 
-const { Api: TelegramApi, TelegramClient, Logger: TelegramLogger } = require("telegram");
-const { StringSession } = require("telegram/sessions/index.js");
-const input = require("input");
-const WhatsApp = require("whatsapp-web.js");
-const QRCcode = require("qrcode-terminal");
-const https = require('https');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-// const request = require('request');
-const { execSync, spawnSync } = require('child_process');
-const xdg = require('@folder/xdg');
-const homedir = require('os').homedir();
-const Database = require('better-sqlite3');
+import { execSync, spawnSync, spawn } from "child_process";
+import xdg from "@folder/xdg";
+import { platform, homedir } from "os";
+import Database from "better-sqlite3";
+import yargs from "yargs";
+import fs from "fs";
+import which from "which";
 
 
-const yargs = require('yargs');
 yargs().help(false);
 var { argv } = yargs(process.argv.slice(2));
 if (!argv)
 	argv = {};
 
-const Telegram = {
-	photo: {
-		get: async function (client, userList) {
-			for (let i = 0; i < userList.length && i < 10; ++i) {
-				userList[i].photo = await client.downloadProfilePhoto(userList[i].id, {
-					isBig: true
-				});
-			}
-			return userList;
-		},
-		isAvailable: (buf) => {
-			if (Buffer.isBuffer(buf))
-				return buf.byteLength !== 0;
-			else if (typeof buf === "string")
-				return buf.length !== 0;
-			return false;
-		}
-	}
-}
 
-const download = (url, dest, cb) => {
-	const file = fs.createWriteStream(dest);
+import * as WhatsApp from "./src/api/whatsapp.js";
+import * as Telegram from "./src/api/telegram.js";
 
-	https.get(url, (response) => {
-		response.pipe(file);
-		file.on('finish', () => {
-			file.close(cb)
-		});
-	}).on('error', (err) => {
-		fs.unlink(dest, cb(err));
-	});
-};
 
+const __dirname = import.meta.dirname;
 const {
 	API_TELEGRAM_TOKEN,
 	API_TELEGRAM_ID,
@@ -77,240 +39,13 @@ const {
 const prog = "nyx-lookup";
 const editor = EDITOR || "vim";
 
-const str2bool = s => /^true|yes|1$/i.test(s);
 const str2yn = s => str2bool(s) ? "yes" : "no";
-
-const displayColour = argv.colour !== false && str2bool(DEFAULT_COLOUR);
-const colour = (...args) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
-
-const NAME_COLOUR = "34";
-const USERNAME_COLOUR = "35";
-
-const typeColour = v => {
-	if (!displayColour)
-		return "";
-	switch (typeof v) {
-		case "boolean":
-			return `\x1b[${v === true ? "32" : "31"}m`;
-		case "number":
-		case "bigint":
-		case "object":
-			if (v === null)
-				return "\x1b[31m";
-			return "\x1b[36m";
-		case "string":
-			const b = v.toLowerCase();
-			if (b === "true" || b === "false")
-				return `\x1b[${v === "true" ? "32" : "31"}m`;
-			else if (v.startsWith("+"))
-				return "\x1b[32m";
-			else if (/^\d+$/.test(v))
-				return "\x1b[36m";
-			return "\x1b[33m";
-		default:
-			return "";
-	}
-}
-
-function colourAuto(out) {
-	const __auto = v => {
-		v = v.slice(1);
-		return `:${typeColour(v.trim())}${v}\x1b[0m`;
-	}
-	return out
-		.replace(/(\r|\n)(\w+:)/g, "\n\x1b[1;4m$2\x1b[0m")
-		.replace(/name:(\s+)([\w ]+)(\r|\n)/gi, `name:$1\x1b[${NAME_COLOUR}m$2\x1b[0m\n`)
-		.replace(/activity:(\s+)([\w ()+:]+)(\r|\n)/gi, `activity:$1\x1b[35m$2\x1b[0m\n`)
-		.replace(/:(\s+)([\w ()+]+)(\r|\n)/g, __auto)
-}
-
-
 const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
-
-function getFileHash(filePath) {
-	return new Promise((resolve, reject) => {
-		const hash = crypto.createHash('sha256');
-		const stream = fs.createReadStream(filePath);
-		stream.on('data', chunk => hash.update(chunk));
-		stream.on('end', () => resolve(hash.digest('hex')));
-		stream.on('error', reject);
-	});
-}
-
-async function removeDuplicateFiles(folder) {
-	const files = fs.readdirSync(folder);
-	const fileHashes = {};
-
-	for (const file of files) {
-		const fullPath = path.join(folder, file);
-		const stats = fs.statSync(fullPath);
-
-		if (!stats.isFile()) continue;
-
-		const hash = await getFileHash(fullPath);
-
-		if (fileHashes[hash]) {
-			const existing = fileHashes[hash];
-
-			// console.log(hash)
-			// console.log(fileHashes);
-
-			// Compare modification times — keep the oldest
-			// if (existing) {
-			if (stats.mtimeMs < existing.mtimeMs) {
-				fs.unlinkSync(existing.path);
-				// fileHashes[hash] = { path: fullPath, mtimeMs: stats.mtimeMs };
-			} else {
-				fs.unlinkSync(fullPath);
-			}
-			// }
-		} else {
-			fileHashes[hash] = { path: fullPath, mtimeMs: stats.mtimeMs };
-		}
-	}
-}
-
-function create_table_whatsapp(db) {
-	db.exec(`CREATE TABLE IF NOT EXISTS whatsapp(
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		rawPhone TEXT UNIQUE,
-		formattedPhone TEXT,
-		type TEXT,
-		name TEXT,
-		pushname TEXT,
-		about TEXT,
-		lastActivity DATE,
-		datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-		datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
-		datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
-	)`);
-
-	// TODO: remove in a later version
-	// That is to maintain portability between version 2.1.0 and 2.2.0
-	const alldata = db.prepare("SELECT 1 FROM pragma_table_info('whatsapp') WHERE name = 'datetimeCreated';").all();
-	// console.log(typeof alldata, alldata);
-	if (alldata.length == 0) {
-		db.exec(`CREATE TABLE IF NOT EXISTS whatsapp0(
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			rawPhone TEXT UNIQUE,
-			formattedPhone TEXT,
-			type TEXT,
-			name TEXT,
-			pushname TEXT,
-			about TEXT,
-			lastActivity DATE,
-			datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-			datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
-			datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
-		);
-		INSERT INTO whatsapp0(
-			id,
-			rawPhone,
-			formattedPhone,
-			type,
-			name,
-			pushname,
-			about,
-			lastActivity
-		) SELECT * FROM whatsapp;
-		DROP TABLE table whatsapp;
-		ALTER TABLE whatsapp0 rename to whatsapp;
-		`);
-	}
-}
-
-function create_table_telegram(db) {
-	db.exec(`CREATE TABLE IF NOT EXISTS telegram(
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		phone TEXT UNIQUE,
-		className TEXT,
-		bot BOOLEAN,
-		verified BOOLEAN,
-		restricted BOOLEAN,
-		restrictionReason TEXT,
-		support BOOLEAN,
-		scam BOOLEAN,
-		fake BOOLEAN,
-		premium BOOLEAN,
-		storiesHidden BOOLEAN,
-		botBusiness BOOLEAN,
-		firstName TEXT,
-		lastName TEXT,
-		username TEXT,
-		emojiStatus TEXT,
-		color TEXT,
-		profileColor TEXT,
-		langCode TEXT,
-		lastActivity DATE,
-		datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-		datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
-		datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
-	)`);
-
-	// TODO: remove in a later version
-	// That is to maintain portability between version 2.1.0 and 2.2.0
-	const alldata = db.prepare("SELECT 1 FROM pragma_table_info('telegram') WHERE name = 'datetimeCreated';").all();
-	// console.log(typeof alldata, alldata);
-	if (alldata.length == 0) {
-		db.exec(`CREATE TABLE IF NOT EXISTS telegram0(
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			phone TEXT UNIQUE,
-			className TEXT,
-			bot BOOLEAN,
-			verified BOOLEAN,
-			restricted BOOLEAN,
-			restrictionReason TEXT,
-			support BOOLEAN,
-			scam BOOLEAN,
-			fake BOOLEAN,
-			premium BOOLEAN,
-			storiesHidden BOOLEAN,
-			botBusiness BOOLEAN,
-			firstName TEXT,
-			lastName TEXT,
-			username TEXT,
-			emojiStatus TEXT,
-			color TEXT,
-			profileColor TEXT,
-			langCode TEXT,
-			lastActivity DATE,
-			datetimeCreated DATETIME DEFAULT CURRENT_TIMESTAMP,
-			datetimeModified DATETIME DEFAULT CURRENT_TIMESTAMP,
-			datetimeAccessed DATETIME DEFAULT CURRENT_TIMESTAMP
-		);
-		INSERT INTO telegram0(
-			id,
-			phone,
-			className,
-			bot,
-			verified,
-			restricted,
-			restrictionReason,
-			support,
-			scam,
-			fake,
-			premium,
-			storiesHidden,
-			botBusiness,
-			firstName,
-			lastName,
-			username,
-			emojiStatus,
-			color,
-			profileColor,
-			langCode,
-			lastActivity
-		) SELECT * FROM telegram;
-		DROP TABLE table telegram;
-		ALTER TABLE telegram0 rename to telegram;
-		`);
-	}
-}
 
 async function main() {
 	try {
 		const { cache } = xdg();
-		const pathSave = `${homedir}/${prog}`;
+		const pathSave = `${homedir()}/${prog}`;
 		const pathToken = `${cache}/${prog}/auth`;
 
 		// console.log(argv);
@@ -323,11 +58,12 @@ async function main() {
                     Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
   -c --[no-]colour  No colour (only for 'text' format) (default \x1b[1m${str2yn(DEFAULT_COLOUR)}\x1b[0m)
   -e --env          Edit env file (default editor: \x1b[1m${editor}\x1b[0m)
-     --clean        Delete WhatsApp's session
      --api={ wa | tg | all }
-                    API service to use (default: \x1b[1m${DEFAULT_API}\x1b[0m)
+                    API service to use (default: \x1b[1m${DEFAULT_API || "all"}\x1b[0m)
      --force        Force query, do not use cached data.
      --db           Access database cache.
+     --open-photos[=phone]
+                    Access cached photos.
 
      --non-interactive
                     Will not ask to login if no session was found
@@ -355,22 +91,42 @@ async function main() {
 		}
 		else if (argv.db) {
 			if (!fs.existsSync(pathSave + '/saved.db') || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
-				console.error("Error: Database does not exist");
+				console.error("Error: Database does not exist.");
+			else if (!which.sync('sqlite3', { nothrow: true }))
+				console.error("Error: sqlite3 not installed.");
 			else
 				spawnSync("sqlite3", [pathSave + '/saved.db'], { stdio: 'inherit' });
 		}
-		else if (argv.clean) {
-			fs.rmSync(pathToken, { recursive: true, force: true });
-			// Should we remove telegram token when cleaning ?
-			// fs.writeFileSync(
-			// 	__dirname + "/.env",
-			// 	fs.readFileSync(__dirname + "/.env", 'utf-8')
-			// 		.split("\n")
-			// 		.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, "API_TELEGRAM_TOKEN="))
-			// 		.join("\n"),
-			// 	'utf-8'
-			// );
+		else if (argv.openPhotos) {
+			var cmd = "";
+			switch (platform().toLowerCase().replace(/[0-9]/g, '')) {
+				case `win`:
+					cmd = `explorer`;
+					break;
+				case `linux`:
+					cmd = `xdg-open`;
+					break;
+				case `macos`:
+					cmd = `open`;
+					break;
+			}
+			const phone = argv._.length !== 0 || argv.openPhotos !== true ? "/"+formatPhone(argv._[0] || argv.openPhotos) : "";
+			const pathPhone = `${pathSave}${phone}`;
+			spawn(cmd, [pathPhone]);
 		}
+		// They shall be removed from their apps
+		// else if (argv.clean) {
+		// 	// fs.rmSync(pathToken, { recursive: true, force: true });
+		// 	// Should we remove telegram token when cleaning ?
+		// 	// fs.writeFileSync(
+		// 	// 	__dirname + "/.env",
+		// 	// 	fs.readFileSync(__dirname + "/.env", 'utf-8')
+		// 	// 		.split("\n")
+		// 	// 		.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, "API_TELEGRAM_TOKEN="))
+		// 	// 		.join("\n"),
+		// 	// 	'utf-8'
+		// 	// );
+		// }
 		else if (argv.test !== true && (!argv._ || argv._?.length === 0))
 			throw new Error("No phone number specified");
 		else {
@@ -382,60 +138,67 @@ async function main() {
 				argv.api = "tg";
 			}
 			if (argv.api === undefined)
-				argv.api = DEFAULT_API.toLowerCase();
+				argv.api = (DEFAULT_API || "all").toLowerCase();
 			// console.log(argv.api);
 
 			const phone = formatPhone(argv.test === true && PHONE_TEST ? PHONE_TEST : (argv._[0] + ""));
 			const pathPhone = `${pathSave}/${phone}`;
 
+			fs.mkdirSync(pathSave, { recursive: true });
 			const db = new Database(pathSave + '/saved.db');
 			db.pragma('journal_mode = WAL');
 
-			if (argv.force !== true) {
+			if (!str2bool(argv.force)) {
 				try {
-					create_table_whatsapp(db);
-					create_table_telegram(db);
+					WhatsApp.create_table(db);
+					Telegram.create_table(db);
 
-					let rows = [];
+					let whatsapp = {};
+					let telegram = {};
 					if (["all", "wa"].includes(argv.api)) {
-						rows = [...rows, db.prepare("SELECT * FROM whatsapp WHERE rawPhone = ?").bind(phone).all()];
 						db.prepare("UPDATE whatsapp SET datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
+						whatsapp = db.prepare("SELECT * FROM whatsapp WHERE rawPhone = ?").bind(phone).all();
+						if (whatsapp.length > 1)
+							throw new Error("Multiple record for this phone number. Debug database with --db");
+						whatsapp = whatsapp[0] || {};
 					}
 					if (["all", "tg"].includes(argv.api)) {
-						rows = [...rows, db.prepare("SELECT * FROM telegram WHERE phone = ?").bind(phone).all()];
 						db.prepare("UPDATE telegram SET datetimeAccessed = time('now') WHERE phone = ?").run(phone);
+						telegram = db.prepare("SELECT * FROM telegram WHERE phone = ?").bind(phone).all();
+						if (telegram.length > 1)
+							throw new Error("Multiple record for this phone number. Debug database with --db");
+						telegram = telegram[0] || {};
 					}
-					// const stmt = db.prepare("SELECT * FROM whatsapp AS wa FULL JOIN telegram AS tg ON wa.rawPhone = tg.phone WHERE wa.rawPhone = ?").bind(phone);
-					// const rows = stmt.all();
-					if (rows.length !== 0) {
-						const user = rows[0];
-						// console.log(typeof user.bot)
-						console.log(`  Type:          ${typeColour(user.type)}${user.type || false}\x1b[0m
-  Bot:           ${typeColour(user.bot)}${user.bot || false}\x1b[0m
-  Verified:      ${typeColour(user.verified)}${user.verified || false}\x1b[0m
-  Restricted:    ${typeColour(user.restricted)}${user.restricted || false}\x1b[0m
-  Premium:       ${typeColour(user.premium)}${user.premium || false}\x1b[0m
-  Support:       ${typeColour(user.support)}${user.support || false}\x1b[0m
-  Scam:          ${typeColour(user.scam)}${user.scam || false}\x1b[0m
-  Fake:          ${typeColour(user.fake)}${user.fake || false}\x1b[0m
 
-  Name:          ${colour(NAME_COLOUR)}${user.name || ""}\x1b[0m
-  First name:    ${colour(NAME_COLOUR)}${user.firstName || ""}\x1b[0m
-  Last name:     ${colour(NAME_COLOUR)}${user.lastName || ""}\x1b[0m
-  Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
-  Username:      ${colour(NAME_COLOUR)}${user.username || ""}\x1b[0m
+					if (whatsapp || telegram) {
+						const last_activity = Math.max(telegram.lastActivity || 0, whatsapp.lastActivity || 0);
+						// console.log(process.env.DEFAULT_COLOUR)
+						// console.log(telegram);
+						console.log(`  Type:          ${typeColour(whatsapp.type || telegram.className)}${whatsapp.type || telegram.className || ""}\x1b[0m
+  Bot:           ${typeColour(telegram.bot == 1)}${telegram.bot || false}\x1b[0m
+  Verified:      ${typeColour(telegram.verified == 1)}${telegram.verified || false}\x1b[0m
+  Restricted:    ${typeColour(telegram.restricted == 1)}${telegram.restricted || false}\x1b[0m
+  Premium:       ${typeColour(telegram.premium == 1)}${telegram.premium || false}\x1b[0m
+  Support:       ${typeColour(telegram.support == 1)}${telegram.support || false}\x1b[0m
+  Scam:          ${typeColour(telegram.scam == 1)}${telegram.scam || false}\x1b[0m
+  Fake:          ${typeColour(telegram.fake == 1)}${telegram.fake || false}\x1b[0m
+
+  Name:          ${colour(COLOUR.NAME)}${whatsapp.name || ""}\x1b[0m
+  First name:    ${colour(COLOUR.NAME)}${telegram.firstName || ""}\x1b[0m
+  Last name:     ${colour(COLOUR.NAME)}${telegram.lastName || ""}\x1b[0m
+  Pushname:      ${colour(COLOUR.NAME)}${whatsapp.pushname || ""}\x1b[0m
+  Username:      ${colour(COLOUR.NAME)}${telegram.username || ""}\x1b[0m
 
   Picture:       ${fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length} saved
-  Phone:         ${typeColour(user.rawPhone)}${user.rawPhone || ""}\x1b[0m
-  Formatted:     ${typeColour(user.formattedPhone)}${user.formattedPhone || ""}\x1b[0m
-  About:         ${colour("33")}${user.about || ""}\x1b[0m
-  Emoji status:  ${colour("33")}${user.emojiStatus || ""}\x1b[0m
-  Color:         ${colour("32")}${user.color || ""}\x1b[0m
-  Profile color: ${colour("32")}${user.profileColor || ""}\x1b[0m
-  Language:      ${colour("32")}${user.langCode || ""}\x1b[0m
-  Last activity: ${typeof user.lastActivity === "number" ? colour("35") + new Date(user.lastActivity * 1000) : "\x1b[3mUnknown"}\x1b[0m
+  Phone:         ${typeColour(whatsapp.rawPhone)}${whatsapp.rawPhone || ""}\x1b[0m
+  Formatted:     ${typeColour(whatsapp.formattedPhone)}${whatsapp.formattedPhone || ""}\x1b[0m
+  About:         ${colour("33")}${whatsapp.about || ""}\x1b[0m
+  Emoji status:  ${colour("33")}${telegram.emojiStatus || ""}\x1b[0m
+  Color:         ${colour("32")}${telegram.color || ""}\x1b[0m
+  Profile color: ${colour("32")}${telegram.profileColor || ""}\x1b[0m
+  Language:      ${colour("32")}${telegram.langCode || ""}\x1b[0m
+  Last activity: ${typeof last_activity === "number" && last_activity != 0 ? colour("35") + new Date(last_activity * 1000) : "\x1b[3mUnknown"}\x1b[0m
 `);
-
 						return 0;
 					}
 				}
@@ -443,6 +206,7 @@ async function main() {
 					if (!err.message.toLowerCase().includes("not such table")) {
 						console.error(err);
 					}
+					return 1;
 				}
 			}
 			// return 0;
@@ -484,309 +248,26 @@ async function main() {
 				dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
 			}
 
+			const context = {
+				db,
+				argv,
+				pathPhone,
+				pathToken,
+				pathSave,
+				phone,
+				format,
+				__dirname,
+				printText
+			};
+
 			if (["all", "wa"].includes(argv.api)) {
-				db.prepare("UPDATE whatsapp SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
-				const client = await new Promise(resolve => {
-					// console.log(pathToken, argv)
-					if (!fs.existsSync(pathToken) && argv.nonInteractive === true)
-						return resolve(null);
-
-					try {
-						const waclient = new WhatsApp.Client({
-							authStrategy: new WhatsApp.LocalAuth({ dataPath: pathToken }),
-							puppeteer: {
-								// handleSIGINT: false,
-								// headless: true,
-								args: [
-									"--no-sandbox",
-									"--disable-setuid-sandbox",
-									"--disable-extensions",
-									'--disable-gpu',
-									"--disable-accelerated-2d-canvas",
-									"--no-first-run",
-									"--no-zygote",
-									"--disable-dev-shm-usage"
-								],
-								// takeoverOnConflict: true,
-							},
-							webVersionCache: {
-								type: "remote",
-								remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/refs/heads/main/html/2.3000.1028141462-alpha.html',
-							},
-							qrMaxRetries: 2
-						});
-
-						waclient.on('qr', qr => {
-							console.log("To login to WhatsApp, scan the following QRCode within WhatsApp settings");
-							// console.log(qr)
-							QRCcode.generate(qr, { small: true });
-						});
-						// waclient.on('authenticated', qr => {
-						// 	console.log("Authenticated");
-						// });
-						waclient.on('ready', async () => {
-							// console.log("ready");
-							resolve(waclient);
-						});
-						waclient.initialize();
-					}
-					catch (e) {
-						console.log(e)
-						resolve(e);
-					}
-				});
-
-				if (client === null)
-					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m No session found`);
-				else {
-					// console.log("Logged in!");
-					const user = await client.getContactById(phone + "@c.us");
-					// console.log("Got contact by id !")
-					if (user !== null) {
-						const [picture, number, about, chat] = await Promise.allSettled([
-							user.getProfilePicUrl(),
-							user.getFormattedNumber(),
-							user.getAbout(),
-							user.getChat()
-						]);
-						// console.log(picture)
-						// console.log(user);
-						// return 0;
-
-						if (!user.name && !user.pushname && !user.shortName && !picture && !about && typeof chat?.timestamp !== "number")
-							printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m Phone not occupied`);
-						else {
-							if (format === "text") {
-								printText(`\r${colour("1;4")}WhatsApp:\x1b[0m
-  Type:          ${user.isBusiness ? "Business" : (user.isEnterprise ? "Enterprise" : (user.isUser ? "User" : "Unknown"))}
-
-  Name:          ${colour(NAME_COLOUR)}${user.name || ""}\x1b[0m
-  Pushname:      ${colour(NAME_COLOUR)}${user.pushname || ""}\x1b[0m
-
-  Picture:       ${picture.value || "None"}, ${fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length} saved
-  Phone:         ${typeColour(number)}${number.value || ""}\x1b[0m
-  About:         ${colour("33")}${about.value || ""}\x1b[0m
-  Last activity: ${typeof chat.value?.timestamp === "number" ? colour("35") + new Date(chat.value?.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
-`);
-							}
-							dataJson.whatsapp = {
-								type: user.isBusiness ? "Business" : user.isUser ? "User" : null,
-								rawPhone: phone,
-								formattedPhone: number.value,
-								name: user.name,
-								// shortname: user.shortName,
-								pushname: user.pushname,
-								picture: picture.value,
-								about: about.value,
-								lastActivity: chat.value?.timestamp
-							};
-
-							if (argv.save === true) {
-								const data = Object.fromEntries(Object.entries(dataJson.whatsapp).filter(([_, v]) => v != null));
-								delete data.picture;
-								const dataLength = Object.keys(data).length;
-
-								if (dataLength !== 0) {
-									// console.log(data)
-									create_table_whatsapp(db);
-									db.prepare(`
-										INSERT INTO whatsapp(${Object.keys(data).join(',')})
-											VALUES(${Object.keys(data).map(v => '?').join(',')})
-										ON CONFLICT (rawPhone)
-											DO UPDATE SET ${Object.keys(data).map(v => v + '=?').join(',')}
-									`).run(...Object.values(data), ...Object.values(data));
-								}
-							}
-							// console.log(argv, picture.value);
-							if (argv.photo && typeof picture.value === "string") {
-								const filepath = `${pathPhone}/whatsapp-${(new Date()).toISOString()}.${picture.value.split('?', 2)[0].split('.').pop()}`
-								const res = await new Promise(r => download(picture.value, filepath, r));
-								if (res instanceof Error)
-									throw res;
-								await removeDuplicateFiles(pathPhone);
-							}
-						}
-					}
-
-					client.removeAllListeners();
-					await client.destroy();
-				}
 				// spinner.succeed("");
+				dataJson.whatsapp = await WhatsApp.Api(context);
 			}
 
 			if (["all", "tg"].includes(argv.api)) {
-				db.prepare("UPDATE telegram SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE phone = ?").run(phone);
-				if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) && argv.nonInteractive === true)
-					printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m No session found`);
-				else {
-					const client = new TelegramClient(
-						new StringSession(API_TELEGRAM_TOKEN),
-						parseInt(API_TELEGRAM_ID),
-						API_TELEGRAM_HASH,
-						{
-							baseLogger: new TelegramLogger("error")
-						});
-
-					await client.start({
-						phoneNumber: async () => await input.text("Phone number to login:"),
-						password: async () => await input.text("Account password:"),
-						phoneCode: async () => await input.text("Received code:"),
-						onError: err => undefined /*console.error(err)*/,
-					});
-					if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN)) {
-						var env = fs.readFileSync(__dirname + "/.env", 'utf-8')
-						if (env.includes("API_TELEGRAM_TOKEN")) {
-							const newEnv = env.split("\n")
-								.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`))
-								.join("\n");
-							// API_TELEGRAM_TOKEN isn't present in .env file
-							if (env === newEnv)
-								env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"\n`;
-							else
-								env = newEnv;
-						}
-						else
-							env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"`;
-						fs.writeFileSync(__dirname + "/.env", env, 'utf-8');
-						printText(`${colour("1;32")}\u2714\x1b[0m Telegram token saved\n`);
-					}
-
-					// spinner.text = "Looking on Telegram";
-					// spinner.start();
-					await client.connect();
-
-					try {
-						const tg = await client?.invoke(
-							new TelegramApi.contacts.ResolvePhone({
-								phone
-							})
-						);
-						if (tg !== undefined)
-							tg.users = await Telegram.photo.get(client, tg.users);
-
-						// console.log(tg.users)
-						if (format === "text") {
-							printText(`${colour("1;4")}Telegram:\x1b[0m`);
-							const multipleAccount = tg.users.length !== 1;
-							if (multipleAccount)
-								console.warn("Multiple Telegram account. Nyx 2 cannot save multiple accounts");
-
-							const pad = multipleAccount ? "    " : "  ";
-							for (let i = 0; i < tg.users.length; ++i) {
-								const {
-									className,
-									verified,
-									restricted,
-									premium,
-									storiesHidden,
-									botBusiness,
-									firstName,
-									lastName,
-									username,
-									phone: phoneNumber,
-									photo,
-									restrictionReason,
-									langCode,
-									status
-								} = tg.users[i];
-								const { wasOnline } = status || { wasOnline: null };
-
-								// console.log(id, typeof id, accessHash, typeof accessHash);
-								if (multipleAccount)
-									console.log(`  ${colour("4")}${i} - ${username || `${firstName || ""} ${lastName || ""}`.trim()}:\x1b[0m`)
-								printText(`${pad}Type:          ${className}
-${pad}Bot Business:  ${typeColour(botBusiness)}${botBusiness}\x1b[0m
-${pad}Restricted:    ${typeColour(restricted)}${restricted}\x1b[0m
-${pad}Restriction Reason: ${restrictionReason || ""}
-
-${pad}First name:    ${colour(NAME_COLOUR)}${firstName || ""}\x1b[0m
-${pad}Last name:     ${colour(NAME_COLOUR)}${lastName || ""}\x1b[0m
-${pad}Username:      ${colour(USERNAME_COLOUR)}${username || ""}\x1b[0m
-
-${pad}Verified:      ${typeColour(verified)}${verified}\x1b[0m
-${pad}Premium:       ${typeColour(premium)}${premium}\x1b[0m
-${pad}Picture:       ${typeColour(Telegram.photo.isAvailable(photo))}${Telegram.photo.isAvailable(photo) ? "Have" : "Do not have"}\x1b[0m
-${pad}Phone:         ${typeColour(phoneNumber)}${phoneNumber || ""}\x1b[0m
-${pad}Language:      ${colour("32")}${langCode || ""}\x1b[0m
-${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(wasOnline * 1000) : "\x1b[3mUnknown"}\x1b[0m`);
-								if (argv.photo && Telegram.photo.isAvailable(photo)) {
-									fs.writeFileSync(`${pathPhone}/telegram-${(new Date()).toISOString()}-${i}.jpg`, photo);
-									await removeDuplicateFiles(pathPhone);
-								}
-							}
-						}
-						dataJson.telegram = tg.users.map(user => {
-							const {
-								className,
-								bot,
-								verified,
-								restricted,
-								support,
-								scam,
-								fake,
-								premium,
-								storiesHidden,
-								botBusiness,
-								firstName,
-								lastName,
-								username,
-								phone: __phone,
-								photo,
-								restrictionReason,
-								langCode,
-								status
-							} = user;
-							const { wasOnline } = status || { wasOnline: null };
-							return {
-								className,
-								bot,
-								verified,
-								restricted,
-								support,
-								scam,
-								fake,
-								premium,
-								storiesHidden,
-								botBusiness,
-								firstName,
-								lastName,
-								username,
-								phone: __phone,
-								photo: Telegram.photo.isAvailable(photo),
-								restrictionReason,
-								langCode,
-								lastActivity: wasOnline
-							};
-						});
-
-						if (argv.save === true) {
-							for (const user of dataJson.telegram) {
-								const data = Object.fromEntries(Object.entries(user).filter(([_, v]) => v != null));
-								delete data.photo;
-								const dataLength = Object.keys(data).length;
-
-								if (dataLength !== 0) {
-									create_table_telegram(db);
-									// console.log(data);
-									const dataValues = Object.values(data).map(v => typeof v === "boolean" ? parseInt(v) : v);
-									db.prepare(`
-									INSERT INTO telegram(${Object.keys(data).join(',')})
-										VALUES(${Object.keys(data).map(v => '?').join(',')})
-									ON CONFLICT (phone)
-										DO UPDATE SET ${Object.keys(data).map(v => v + '=?').join(',')}
-								`).run(...dataValues, ...dataValues);
-								}
-							}
-						}
-					}
-					catch (e) {
-						if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
-							printText(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m Phone not occupied`);
-						else
-							console.error(e);
-					}
-				}
 				// spinner.succeed("");
+				dataJson.telegram = await Telegram.Api(context);
 			}
 
 			// console.log("${colour("1;32")}Done.\x1b[0m");
