@@ -79,7 +79,8 @@ async function main() {
 			return 0;
 		}
 		else if (argv.v || argv.version) {
-			const current = require('./package.json').version;
+			const current = JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
+			// const current = require('./package.json');
 			console.log(current);
 			const latest = execSync(`npm view ${prog} version`, { encoding: 'utf-8' }).trim();
 			console.log(latest === current ? `${colour("1;32")}\u2714 Latest\x1b[0m` : `${colour("1;31")}\u2a2f Latest: ${latest}\x1b[0m`);
@@ -148,10 +149,11 @@ async function main() {
 			const db = new Database(pathSave + '/saved.db');
 			db.pragma('journal_mode = WAL');
 
+			WhatsApp.create_table(db);
+			Telegram.create_table(db);
+
 			if (!str2bool(argv.force)) {
 				try {
-					WhatsApp.create_table(db);
-					Telegram.create_table(db);
 
 					let whatsapp = {};
 					let telegram = {};

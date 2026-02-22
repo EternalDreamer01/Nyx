@@ -167,7 +167,7 @@ export async function Api({ db, argv, phone, pathPhone, pathToken, format, print
 
 					if (dataLength !== 0) {
 						// console.log(data)
-						create_table(db);
+						// create_table(db);
 						db.prepare(`
 											INSERT INTO whatsapp(${Object.keys(data).join(',')})
 												VALUES(${Object.keys(data).map(v => '?').join(',')})

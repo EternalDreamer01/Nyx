@@ -1,14 +1,14 @@
 #!./test/bats/bin/bats
 
 prog="nyx-lookup"
-cache_dir="$HOME/.cache/nyx-lookup"
-cache_test="$HOME/.cache/nyx-lookup-test"
+cache_dir="$HOME/.cache/$prog"
+cache_test="$HOME/.cache/$prog-test"
 env_path="./.env"
 env_test="./.env.test"
 
 
 sqlite_exec() {
-	echo ".exit" | sqlite3 "$HOME/nyx-lookup/saved.db" -cmd "$1" || true
+	echo ".exit" | sqlite3 "$HOME/$prog/saved.db" -cmd "$1" || true
 }
 sqlite_delete() {
 	# sqlite_exec "DELETE FROM whatsapp WHERE rawPhone = '$1'; DELETE FROM telegram WHERE phone = '$1';"
@@ -25,12 +25,12 @@ sleep_random() {
 	sleep 2.6
 }
 
-mkdir -p "$HOME/nyx-lookup"
-touch "$HOME/nyx-lookup/saved.db"
+mkdir -p "$HOME/$prog"
+touch "$HOME/$prog/saved.db"
 
 @test "env" {
-	[ -f ".env" ]
-	[ -f ".env.txt" ]
+	[ -f "$env_path" ]
+	[ -f "$env_path.txt" ]
 }
 
 @test "help" {
@@ -39,7 +39,7 @@ touch "$HOME/nyx-lookup/saved.db"
 }
 
 real_version="$(grep '"version": "[0-9a-z.-]*"' ./package.json | sed -E 's/.*"version": "([a-z0-9.-]*)".*/\1/')"
-latest_version="$(npm view nyx-lookup version)"
+latest_version="$(npm view $prog version)"
 
 @test "version - latest" {
 	echo "Latest version: $latest_version"

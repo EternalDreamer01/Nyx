@@ -275,7 +275,7 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 					const dataLength = Object.keys(data).length;
 
 					if (dataLength !== 0) {
-						create_table(db);
+						// create_table(db);
 						// console.log(data);
 						const dataValues = Object.values(data).map(v => typeof v === "boolean" ? (v ? 1 : 0) : v);
 						// console.log(data, dataValues)
