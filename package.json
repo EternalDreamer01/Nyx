@@ -1,6 +1,6 @@
 {
 	"name": "nyx-lookup",
-	"version": "2.2.0",
+	"version": "2.2.1",
 	"description": "Reverse phone lookup, based on WhatsApp and Telegram",
 	"main": "./index.js",
 	"type": "module",
@@ -9,7 +9,8 @@
 		"nyxl": "index.js"
 	},
 	"files": [
-		".env.txt"
+		".env.txt",
+		"src/"
 	],
 	"scripts": {
 		"clean": "node index.js --clean",
