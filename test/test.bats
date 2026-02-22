@@ -66,6 +66,18 @@ latest_version="$(npm view nyx-lookup version)"
 	[ "${#output}" -gt 40 ]
 }
 
+
+@test "phone lookup - colour" {
+	source "$env_path"
+	sqlite_delete "$PHONE_TEST"
+
+	output1="$(node index.js --test --force --save --format=text)"
+	output2="$(node index.js --test --force --save --format=text --no-colour)"
+	output3="$(node index.js --test --force --save --format=text --colour)"
+	[ "${#output1}" -eq "${#output3}" ] # expects default to be coloured
+	[ "${#output1}" -ne "${#output2}" ]
+}
+
 sleep_random
 
 # API_TELEGRAM_TOKEN=""
