@@ -29,9 +29,12 @@ yargs().help(false);
 var { argv } = yargs(process.argv.slice(2));
 if (!argv)
 	argv = {};
+const {
+	DEFAULT_COLOUR
+} = process.env;
 
 export const str2bool = s => /^true|yes|1$/i.test(s);
-const displayColour =  argv.colour !== undefined ? argv.colour : str2bool(process.env.DEFAULT_COLOUR);
+const displayColour =  argv.colour !== undefined ? argv.colour : str2bool(DEFAULT_COLOUR !== undefined ? DEFAULT_COLOUR : true);
 export const colour = (...args) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
 
 export const COLOUR = {

@@ -56,7 +56,7 @@ async function main() {
   -s --[no-]save    Save user info and photo (autosave: \x1b[1m${str2yn(AUTOSAVE)}\x1b[0m)
   -f --format={ text | json }
                     Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
-  -c --[no-]colour  No colour (only for 'text' format) (default \x1b[1m${str2yn(DEFAULT_COLOUR)}\x1b[0m)
+  -c --[no-]colour  No colour (only for 'text' format) (default \x1b[1m${str2yn(DEFAULT_COLOUR !== undefined ? DEFAULT_COLOUR : true)}\x1b[0m)
   -e --env          Edit env file (default editor: \x1b[1m${editor}\x1b[0m)
      --api={ wa | tg | all }
                     API service to use (default: \x1b[1m${DEFAULT_API || "all"}\x1b[0m)
