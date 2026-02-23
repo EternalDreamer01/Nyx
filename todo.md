@@ -16,9 +16,12 @@
 
 ## Unavailable Reverse Phone Lookup
 
-* Signal
-* LINE
-* Viber
-* Messenger
+* [Signal](https://bbernhard.github.io/signal-cli-rest-api/#/): not possible
+* [LINE](https://developers.line.biz/en/reference/messaging-api/#users): requires user interaction
+* [Viber](https://developers.viber.com/docs/api/nodejs-bot-api/#getUserDetails): requires user interaction
 * WeChat
 * Kakao Talk
+
+---
+
+* [Messenger](https://developers.facebook.com/docs/messenger-platform/identity/user-profile): Require *Business Asset User Profile Access* feature
