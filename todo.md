@@ -17,9 +17,9 @@
 ## Unavailable Reverse Phone Lookup
 
 * [Signal](https://bbernhard.github.io/signal-cli-rest-api/#/): not possible
-* [LINE](https://developers.line.biz/en/reference/messaging-api/#users): requires user interaction
-* [Viber](https://developers.viber.com/docs/api/nodejs-bot-api/#getUserDetails): requires user interaction
-* WeChat
+* [LINE](https://developers.line.biz/en/reference/messaging-api/#users): requires a user message
+* [Viber](https://developers.viber.com/docs/api/nodejs-bot-api/#getUserDetails): requires user message
+* [WeChat](https://github.com/wechaty/wechaty): no phone number
 * Kakao Talk
 
 ---
