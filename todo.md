@@ -20,6 +20,7 @@
 * [LINE](https://developers.line.biz/en/reference/messaging-api/#users): requires a user message
 * [Viber](https://developers.viber.com/docs/api/nodejs-bot-api/#getUserDetails): requires user message
 * [WeChat](https://github.com/wechaty/wechaty): no phone number
+* [SnapChaat](https://developers.snap.com/api/marketing-api/Public-Profile-API/Profiles#retrieving-profile-information): not possible
 * Kakao Talk
 
 ---
