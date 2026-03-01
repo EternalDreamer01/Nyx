@@ -17,10 +17,13 @@ These data include :
 * Last activity
 * and more...
 
+*See [Setup Inspected Applications](#setup-inspected-applications) for more information*
+
 ## Table of contents 
 
 2. [Disclaimer](#disclaimer)
 2. [Install](#install)
+    * [Setup Inspected Applications](#setup-inspected-applications)
 2. [Usage](#usage)
 2. [FAQ](#faq)
 	* [Is the user notified about this ?](#is-the-user-notified-about-this-)
