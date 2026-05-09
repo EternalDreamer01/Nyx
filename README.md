@@ -120,12 +120,16 @@ Usage: nyx-lookup [options] phone
 Editable using `nyx-lookup -e` ;
 
 | Variable | Description | Default | Possible values |
-|-|-|-|-|
-| `API_TELEGRAM_ID` | Telegram ID (required to use Telegram API) | *None* | |
-| `API_TELEGRAM_HASH` | Telegram Hash (required to use Telegram API) | *None* | |
+|-:|-|:-:|-|
+| `DEFAULT_API` | What APIs to use | `all` | <ul><li>`all`,</li><li>`wa` (WhatsApp),</li><li>`tg` (Telegram)</li></ul> |
+| `API_TELEGRAM_ID` | Telegram ID (required to use Telegram API) | *Required* | |
+| `API_TELEGRAM_HASH` | Telegram Hash (required to use Telegram API) | *Required* | |
 | `DEFAULT_INFO_FORMAT` | Default output format | `text` | `text` or `json` |
-| `AUTOSAVE` | Enable/disable autosave (`~/nyx-lookup/saved.db`) | `true` | `true`/`false`, `yes`/`no`, `1`/`0` |
-| `PHONE_TEST` | Phone number to use for testing | *None* | |
+| `AUTOSAVE` | Enable autosave (`~/nyx-lookup/saved.db`) | `true` | *Boolean* |
+| `DEFAULT_COLOUR` | Enable colour | `true` | *Boolean* |
+| `PHONE_TEST` | Phone number to use for testing | *Required* | |
+
+*Boolean accept `true`/`false`, `yes`/`no`, `1`/`0`.*
 
 The database of saved results is accessible at `~/nyx-lookup/saved.db`.
 To enable/disable autosave, run `nyx-lookup -e` and edit `AUTOSAVE`.
