@@ -110,7 +110,7 @@ async function main() {
 					cmd = `open`;
 					break;
 			}
-			const phone = argv._.length !== 0 || argv.openPhotos !== true ? "/"+formatPhone(argv._[0] || argv.openPhotos) : "";
+			const phone = argv._.length !== 0 || argv.openPhotos !== true ? "/" + formatPhone(argv._[0] || argv.openPhotos) : "";
 			const pathPhone = `${pathSave}${phone}`;
 			spawn(cmd, [pathPhone]);
 		}
@@ -171,10 +171,18 @@ async function main() {
 						telegram = telegram[0] || {};
 					}
 
-					if (whatsapp || telegram) {
+					if ((Object.keys({ ...whatsapp, ...telegram }).length !== 0)) {
+						// console.log(whatsapp, telegram);
 						const last_activity = Math.max(telegram.lastActivity || 0, whatsapp.lastActivity || 0);
 						// console.log(process.env.DEFAULT_COLOUR)
 						// console.log(telegram);
+						var photos = 0;
+						try {
+							photos = fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length;
+						} catch (e) {
+							// console.error(e);
+						}
+
 						console.log(`  Type:          ${typeColour(whatsapp.type || telegram.className)}${whatsapp.type || telegram.className || ""}\x1b[0m
   Bot:           ${typeColour(telegram.bot == 1)}${telegram.bot || false}\x1b[0m
   Verified:      ${typeColour(telegram.verified == 1)}${telegram.verified || false}\x1b[0m
@@ -190,7 +198,7 @@ async function main() {
   Pushname:      ${colour(COLOUR.NAME)}${whatsapp.pushname || ""}\x1b[0m
   Username:      ${colour(COLOUR.NAME)}${telegram.username || ""}\x1b[0m
 
-  Picture:       ${fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length} saved
+  Picture:       ${photos} saved
   Phone:         ${typeColour(whatsapp.rawPhone)}${whatsapp.rawPhone || ""}\x1b[0m
   Formatted:     ${typeColour(whatsapp.formattedPhone)}${whatsapp.formattedPhone || ""}\x1b[0m
   About:         ${colour("33")}${whatsapp.about || ""}\x1b[0m
@@ -278,7 +286,7 @@ async function main() {
 		return 0;
 	}
 	catch (e) {
-		console.log(`Error: ${e?.message}`);
+		console.log(e);
 		// spinner.fail("");
 		// if (argv.save === true)
 		// 	fs.writeFileSync(`${phone}/info.${format === "text" ? "txt" : "json"}`, format === "text" ? dataText : dataJson);
@@ -287,5 +295,5 @@ async function main() {
 }
 
 main()
-	.then(status => process.exit(status))
+	// .then(status => process.exit(status))
 	.catch(() => process.exit(1))

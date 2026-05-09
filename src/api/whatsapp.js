@@ -92,6 +92,10 @@ export async function Api({ db, argv, phone, pathPhone, pathToken, format, print
 					],
 					takeoverOnConflict: true,
 				},
+				webVersionCache: {
+					type: "remote",
+					remotePath: "https://raw.githubusercontent.com/wppconnect-team/wa-version/refs/heads/main/html/2.3000.1039171941-alpha.html",
+				},
 				qrMaxRetries: 2
 			});
 
@@ -100,9 +104,9 @@ export async function Api({ db, argv, phone, pathPhone, pathToken, format, print
 				// console.log(qr)
 				QRCcode.generate(qr, { small: true });
 			});
-			// waclient.on('authenticated', qr => {
-			// 	console.log("Authenticated");
-			// });
+			waclient.on('authenticated', qr => {
+				console.log("Authenticated");
+			});
 			waclient.on('ready', async () => {
 				// console.log("ready");
 				resolve(waclient);
@@ -136,17 +140,24 @@ export async function Api({ db, argv, phone, pathPhone, pathToken, format, print
 				console.log(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m Phone not occupied`);
 			else {
 				if (format === "text") {
+					var photos = 0;
+					try {
+						photos = fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length;
+					} catch (e) {
+						// console.error(e);
+					}
+
 					console.log(`\r${colour("1;4")}WhatsApp:\x1b[0m
-	  Type:          ${user.isBusiness ? "Business" : (user.isEnterprise ? "Enterprise" : (user.isUser ? "User" : "Unknown"))}
+  Type:          ${user.isBusiness ? "Business" : (user.isEnterprise ? "Enterprise" : (user.isUser ? "User" : "Unknown"))}
 	
-	  Name:          ${colour(COLOUR.NAME)}${user.name || ""}\x1b[0m
-	  Pushname:      ${colour(COLOUR.NAME)}${user.pushname || ""}\x1b[0m
+  Name:          ${colour(COLOUR.NAME)}${user.name || ""}\x1b[0m
+  Pushname:      ${colour(COLOUR.NAME)}${user.pushname || ""}\x1b[0m
 	
-	  Picture:       ${picture.value || "None"}, ${fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length} saved
-	  Phone:         ${typeColour(number)}${number.value || ""}\x1b[0m
-	  About:         ${colour("33")}${about.value || ""}\x1b[0m
-	  Last activity: ${typeof chat.value?.timestamp === "number" ? colour("35") + new Date(chat.value?.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
-	`);
+  Picture:       ${picture.value || "None"}, ${photos} saved
+  Phone:         ${typeColour(number)}${number.value || ""}\x1b[0m
+  About:         ${colour("33")}${about.value || ""}\x1b[0m
+  Last activity: ${typeof chat.value?.timestamp === "number" ? colour("35") + new Date(chat.value?.timestamp * 1000) : "\x1b[3mUnknown"}\x1b[0m
+`);
 				}
 				const dataJson = {
 					type: user.isBusiness ? "Business" : user.isUser ? "User" : null,
