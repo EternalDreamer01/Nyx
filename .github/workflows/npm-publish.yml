@@ -18,15 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: |
-          npm ci
-          rm -rf test/bats test/test_helper
-          git rm -rf test/bats test/test_helper
-          git submodule add https://github.com/bats-core/bats-core.git test/bats
-          git submodule add https://github.com/bats-core/bats-support.git test/test_helper/bats-support
-          git submodule add https://github.com/bats-core/bats-assert.git test/test_helper/bats-assert
-          echo API_TELEGRAM_TOKEN="${{secrets.API_TELEGRAM_TOKEN}}" >> .env
-      - run: npm test
+      - run: npm ci && npm test
         env:
           API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
           API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
