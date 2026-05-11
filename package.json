@@ -15,7 +15,7 @@
 	"scripts": {
 		"clean": "node index.js --clean",
 		"start": "node index.js",
-		"test": "./test/test.bats",
+		"test": "jest",
 		"test:phone": "node index.js --test"
 	},
 	"author": "Dimitri Simon",
@@ -55,6 +55,12 @@
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/qrcode-terminal": "^0.12.2",
 		"@types/which": "^3.0.4",
-		"@types/yargs": "^17.0.35"
+		"@types/yargs": "^17.0.35",
+		"jest": "^30.4.2"
+	},
+	"jest": {
+		"setupFiles": [
+			"./tests/jest.setup.js"
+		]
 	}
 }

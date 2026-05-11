@@ -49,11 +49,11 @@ By using this project, you acknowledge and agree to abide by the principles outl
 npm i -g nyx-lookup
 ```
 
-### Development
+<!-- ### Development
 
 ```sh
 git clone --recurse-submodules -j4 https://github.com/EternalDreamer01/Nyx.git
-```
+``` -->
 
 ### Prerequisites
 

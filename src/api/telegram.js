@@ -127,12 +127,13 @@ export async function Api({ db, phone, argv, pathPhone, __dirname, format, print
 			parseInt(API_TELEGRAM_ID),
 			API_TELEGRAM_HASH,
 			{
-				baseLogger: new TelegramLogger("error")
+				baseLogger: new TelegramLogger("error"),
+				timeout: 15
 			});
 
 		await client.start({
 			phoneNumber: async () => await input.text("Phone number to login:"),
-			password: async () => await input.text("Account password:"),
+			password: async () => await input.password("Account password:"),
 			phoneCode: async () => await input.text("Received code:"),
 			onError: err => undefined /*console.error(err)*/,
 		});
