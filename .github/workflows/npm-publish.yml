@@ -22,7 +22,7 @@ jobs:
       #     echo API_TELEGRAM_ID="${{secrets.API_TELEGRAM_ID}}" >> .env
       #     echo API_TELEGRAM_HASH="${{secrets.API_TELEGRAM_HASH}}" >> .env
       #     echo API_TELEGRAM_TOKEN="${{secrets.API_TELEGRAM_TOKEN}}" >> .env
-      - run: npm ci && npm test
+      - run: touch .env && npm ci && npm test
         env:
           API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
           API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
