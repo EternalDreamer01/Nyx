@@ -18,13 +18,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      # - run: |
+      #     echo API_TELEGRAM_ID="${{secrets.API_TELEGRAM_ID}}" >> .env
+      #     echo API_TELEGRAM_HASH="${{secrets.API_TELEGRAM_HASH}}" >> .env
+      #     echo API_TELEGRAM_TOKEN="${{secrets.API_TELEGRAM_TOKEN}}" >> .env
       - run: npm ci && npm test
         env:
           API_TELEGRAM_ID: ${{secrets.API_TELEGRAM_ID}}
           API_TELEGRAM_HASH: ${{secrets.API_TELEGRAM_HASH}}
+          API_TELEGRAM_TOKEN: ${{secrets.API_TELEGRAM_TOKEN}}
           PHONE_TEST: ${{secrets.PHONE_TEST}}
           DEFAULT_INFO_FORMAT: ${{vars.DEFAULT_INFO_FORMAT}}
-          AUTOSAVE: ${{vars.AUTOSAVE}}
+          AUTOSAVE: true
+          DEFAULT_API: all
+          DEFAULT_COLOUR: true
 
   publish-npm:
     needs: build
