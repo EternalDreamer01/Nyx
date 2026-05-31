@@ -61,11 +61,10 @@ const __dirname = import.meta.dirname;
 
 const argv = yargs()
 	.scriptName(prog)
-	.usage('$0 [options] phone')
+	.usage('Usage: $0 [options] phone')
 	.positional('phone', {
 		describe: 'phone number to lookup',
 		type: 'string',
-		//   hidden: true,
 	})
 	.hide('phone')
 	.option('photo', {
@@ -107,7 +106,7 @@ const argv = yargs()
 		describe: "Force online query, do not use cached data",
 		type: 'boolean'
 	})
-	.command('env', `Edit env file (default editor: \x1b[1m${editor}\x1b[0m)`, ({ argv }) => {
+	.command('env', `Edit env file`, /* (default editor: \x1b[1m${editor}\x1b[0m)`,*/ ({ argv }) => {
 		if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
 			fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
 		spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
@@ -136,11 +135,11 @@ const argv = yargs()
 		describe: "Do not ask to login if no session was found",
 		type: 'boolean'
 	})
-	.option('test', {
-		default: false,
-		describe: "Test phone from env. variable PHONE_TEST. Non-interactive automatically true",
-		type: 'boolean'
-	})
+	// .option('test', {
+	// 	default: false,
+	// 	describe: "Test phone from env. variable PHONE_TEST. Non-interactive automatically true",
+	// 	type: 'boolean'
+	// })
 	// .demandCommand(1, 1, 'Phone number is required')
 	.check((argv) => {
 		// Conditional logic to check for other commands
@@ -184,13 +183,13 @@ async function main() {
 		// 	// 	'utf-8'
 		// 	// );
 		// }
-			if (argv.test === true) {
-				if (!PHONE_TEST && argv._.length !== 1)
-					throw new Error("No test phone specified in environment variable PHONE_TEST and no phone number passed in argument");
-				argv.nonInteractive = true;
-				// Is WhatsApp possible ?
-				argv.api = "tg";
-			}
+			// if (argv.test === true) {
+			// 	if (!PHONE_TEST && argv._.length !== 1)
+			// 		throw new Error("No test phone specified in environment variable PHONE_TEST and no phone number passed in argument");
+			// 	argv.nonInteractive = true;
+			// 	// Is WhatsApp possible ?
+			// 	argv.api = "tg";
+			// }
 			if (argv.api === undefined)
 				argv.api = (DEFAULT_API || "all").toLowerCase();
 			// console.log(argv.api);
