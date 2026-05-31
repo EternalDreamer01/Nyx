@@ -68,7 +68,7 @@ function download(url, dest, cb) {
 	});
 }
 
-export async function Api({ db, argv, phone, pathPhone, pathToken, format, printText }) {
+export async function Api({ db, argv, phone, pathPhone, pathToken, format, printText, ping = false }) {
 	db.prepare("UPDATE whatsapp SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
 	const client = await new Promise(resolve => {
 		// console.log(pathToken, argv)
@@ -100,6 +100,8 @@ export async function Api({ db, argv, phone, pathPhone, pathToken, format, print
 			});
 
 			waclient.on('qr', qr => {
+				if (ping === true)
+					return resolve(null);
 				console.log("To login to WhatsApp, scan the following QRCode within WhatsApp settings");
 				// console.log(qr)
 				QRCcode.generate(qr, { small: true });
@@ -118,8 +120,11 @@ export async function Api({ db, argv, phone, pathPhone, pathToken, format, print
 			resolve(e);
 		}
 	});
+	
+	if (ping === true)
+		return client !== null && client instanceof WhatsApp.Client;
 
-	if (client === null)
+	if (client === null || !(client instanceof WhatsApp.Client))
 		console.log(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mWhatsApp:\x1b[0m No session found`);
 	else {
 		// console.log("Logged in!");

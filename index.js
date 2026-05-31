@@ -1,27 +1,22 @@
 #!/usr/bin/env node
 
-import { colour, typeColour, COLOUR, str2bool } from "./src/utils.js";
+import { colour, typeColour, COLOUR, str2bool, icon, formatPhone } from "./src/utils.js";
 
 import { execSync, spawnSync, spawn } from "child_process";
 import xdg from "@folder/xdg";
 import { platform, homedir } from "os";
 import Database from "better-sqlite3";
 import yargs from "yargs";
+import { hideBin } from 'yargs/helpers';
 import fs from "fs";
 import which from "which";
-
-
-yargs().help(false);
-var { argv } = yargs(process.argv.slice(2));
-if (!argv)
-	argv = {};
-
+import cliSpinners from 'cli-spinners';
+import logUpdate from 'log-update';
 
 import * as WhatsApp from "./src/api/whatsapp.js";
 import * as Telegram from "./src/api/telegram.js";
 
 
-const __dirname = import.meta.dirname;
 const {
 	API_TELEGRAM_TOKEN,
 	API_TELEGRAM_ID,
@@ -37,83 +32,145 @@ const {
 } = process.env;
 
 const prog = "nyx-lookup";
-const editor = EDITOR || "vim";
 
-const str2yn = s => str2bool(s) ? "yes" : "no";
-const formatPhone = str => (str === "string" ? str.replace(/ |-|\\|\/|\.|^(\+*)(0*)/g, '') : str + "")
+const { cache } = xdg();
+const pathSave = `${homedir()}/${prog}`;
+const pathToken = `${cache}/${prog}/auth`;
+const editor = (EDITOR && which.sync(EDITOR, { nothrow: true })) ? EDITOR : (which.sync("vim", { nothrow: true }) ? "vim" : "nano");
+
+const EXPLORER = {
+	win: "explorer",
+	linux: "xdg-open",
+	darwin: "open",
+	macos: "open"
+};
+
+const y = yargs(process.argv.slice(2))
+	.alias('v', 'version')
+	.version(false);
+if (y.argv.version) {
+	const current = JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
+	// const current = require('./package.json');
+	console.log(current);
+	const latest = execSync(`npm view ${prog} version`, { encoding: 'utf-8' }).trim();
+	console.log(latest === current ? `\x1b[1;32m\u2714 Latest\x1b[0m` : `\x1b[1;31m\u2a2f Latest: ${latest}\x1b[0m`);
+	process.exit(0);
+}
+
+const __dirname = import.meta.dirname;
+
+const argv = yargs()
+	.scriptName(prog)
+	.usage('$0 [options] phone')
+	.positional('phone', {
+		describe: 'phone number to lookup',
+		type: 'string',
+		//   hidden: true,
+	})
+	.hide('phone')
+	.option('photo', {
+		alias: 'p',
+		default: str2bool(AUTOSAVE),
+		describe: `Download photo into '~/${prog}'`,
+		type: 'boolean'
+	})
+	.option('save', {
+		alias: 's',
+		default: str2bool(AUTOSAVE),
+		describe: `Save user info and photo`, // (autosave: \x1b[1m${str2yn(AUTOSAVE)}\x1b[0m)`,
+		type: 'boolean'
+	})
+	.option('format', {
+		alias: 'f',
+		default: DEFAULT_INFO_FORMAT || "text",
+		requiresArg: true,
+		describe: `Define output format`, // (default: ${(!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT !== "json") ? "text" : "json"})`,
+		choices: ["text", "json"],
+		demandOption: false
+	})
+	.option('colour', {
+		alias: 'c',
+		default: DEFAULT_COLOUR !== undefined ? str2bool(DEFAULT_COLOUR) : true,
+		describe: `No colour (only for 'text' format)`, // (default: \x1b[1m${str2yn(DEFAULT_COLOUR !== undefined ? DEFAULT_COLOUR : true)}\x1b[0m)`,
+		type: 'boolean',
+		demandOption: false
+	})
+	.hide('colour')
+	.option('api', {
+		default: DEFAULT_API || "all",
+		requiresArg: true,
+		describe: `API service to use`, // (default: \x1b[1m${DEFAULT_API || "all"}\x1b[0m)`,
+		choices: ["wa", "tg", "all"],
+	})
+	.option('force', {
+		default: false,
+		describe: "Force online query, do not use cached data",
+		type: 'boolean'
+	})
+	.command('env', `Edit env file (default editor: \x1b[1m${editor}\x1b[0m)`, ({ argv }) => {
+		if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
+			fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
+		spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
+		process.exit(0);
+	})
+	.command("db", "Access cache database", ({ argv }) => {
+		if (!fs.existsSync(pathSave + '/saved.db') || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
+			console.error("Error: Database does not exist.");
+		else if (!which.sync('sqlite3', { nothrow: true }))
+			console.error("Error: sqlite3 not installed.");
+		else
+			spawnSync("sqlite3", [pathSave + '/saved.db'], { stdio: 'inherit' });
+		process.exit(0);
+	})
+	.command('open-photos', "Access cached photos", ({ argv }) => {
+		var cmd = EXPLORER[platform().toLowerCase().replace(/[0-9]/g, '')] || "open";
+		// console.log(argv);
+		const phone = argv._.length >= 2 ? "/" + formatPhone(argv._[1]) : "";
+		const pathPhone = `${pathSave}${phone}`;
+		spawn(cmd, [pathPhone]);
+		process.exit(0);
+	})
+	.command('ping', "Check sessions status")
+	.option('non-interactive', {
+		default: false,
+		describe: "Do not ask to login if no session was found",
+		type: 'boolean'
+	})
+	.option('test', {
+		default: false,
+		describe: "Test phone from env. variable PHONE_TEST. Non-interactive automatically true",
+		type: 'boolean'
+	})
+	// .demandCommand(1, 1, 'Phone number is required')
+	.check((argv) => {
+		// Conditional logic to check for other commands
+		if (!argv.test && !["env", "db", "open-photos", "ping"].includes((argv._[0] || "").toString())) {
+			// console.log(argv) //._[0], typeof formatPhone(argv._[0]), formatPhone(argv._[0]))
+			if(!argv._[0])
+				throw new Error('Phone number required.');
+			if (!/^[0-9]{7,17}$/.test(formatPhone(argv._[0])))
+				throw new Error('Invalid phone number format.');
+		}
+		return true; // If checks pass
+	})
+	.alias('v', 'version')
+	// .conflicts('version', ["phone", "test"])
+	// .version(false)
+	.epilogue(`Status:
+  WhatsApp: ${icon(fs.existsSync(pathToken + "/session/Default/Sessions"))}
+  Telegram: ${icon(/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN))}
+	`)
+	.showHelpOnFail(false, "Pass --help for more information")
+	.alias('h', 'help')
+	.help()
+	.strictOptions()
+	.parse(hideBin(process.argv));
+
+
+// process.exit(0);
 
 async function main() {
 	try {
-		const { cache } = xdg();
-		const pathSave = `${homedir()}/${prog}`;
-		const pathToken = `${cache}/${prog}/auth`;
-
-		// console.log(argv);
-		if (process.argv.length < 3 || argv.h || argv.help || argv["?"]) {
-			console.log(`\x1b[0;4mUsage:\x1b[0m \x1b[36m${prog}\x1b[0m [options] \x1b[1mphone\x1b[0m
-
-  -p --photo        Download photo into '${pathSave}'
-  -s --[no-]save    Save user info and photo (autosave: \x1b[1m${str2yn(AUTOSAVE)}\x1b[0m)
-  -f --format={ text | json }
-                    Define output format (default: \x1b[1m${!DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text"}\x1b[0m)
-  -c --[no-]colour  No colour (only for 'text' format) (default: \x1b[1m${str2yn(DEFAULT_COLOUR !== undefined ? DEFAULT_COLOUR : true)}\x1b[0m)
-  -e --env          Edit env file (default editor: \x1b[1m${editor}\x1b[0m)
-     --api={ wa | tg | all }
-                    API service to use (default: \x1b[1m${DEFAULT_API || "all"}\x1b[0m)
-     --force        Force query, do not use cached data.
-     --db           Access database cache.
-     --open-photos[=phone]
-                    Access cached photos.
-     --non-interactive
-                    Will not ask to login if no session was found
-     --test         Test phone from env. variable PHONE_TEST
-                    Non-interactive is automatically true
-                    
-  -h --help        Show this help
-  -v --version     Show version
-  
-  \x1b[4mStatus:\x1b[0m
-    WhatsApp: ${fs.existsSync(pathToken) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}
-    Telegram: ${/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) ? "\x1b[1;32m\u2714\x1b[0m" : "\x1b[1;31m\u2a2f\x1b[0m"}`)
-			return 0;
-		}
-		else if (argv.v || argv.version) {
-			const current = JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
-			// const current = require('./package.json');
-			console.log(current);
-			const latest = execSync(`npm view ${prog} version`, { encoding: 'utf-8' }).trim();
-			console.log(latest === current ? `${colour("1;32")}\u2714 Latest\x1b[0m` : `${colour("1;31")}\u2a2f Latest: ${latest}\x1b[0m`);
-		}
-		else if (argv.e || argv.env) {
-			if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
-				fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
-			spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
-		}
-		else if (argv.db) {
-			if (!fs.existsSync(pathSave + '/saved.db') || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
-				console.error("Error: Database does not exist.");
-			else if (!which.sync('sqlite3', { nothrow: true }))
-				console.error("Error: sqlite3 not installed.");
-			else
-				spawnSync("sqlite3", [pathSave + '/saved.db'], { stdio: 'inherit' });
-		}
-		else if (argv.openPhotos) {
-			var cmd = "";
-			switch (platform().toLowerCase().replace(/[0-9]/g, '')) {
-				case `win`:
-					cmd = `explorer`;
-					break;
-				case `linux`:
-					cmd = `xdg-open`;
-					break;
-				case `macos`:
-					cmd = `open`;
-					break;
-			}
-			const phone = argv._.length !== 0 || argv.openPhotos !== true ? "/" + formatPhone(argv._[0] || argv.openPhotos) : "";
-			const pathPhone = `${pathSave}${phone}`;
-			spawn(cmd, [pathPhone]);
-		}
 		// They shall be removed from their apps
 		// else if (argv.clean) {
 		// 	// fs.rmSync(pathToken, { recursive: true, force: true });
@@ -127,9 +184,6 @@ async function main() {
 		// 	// 	'utf-8'
 		// 	// );
 		// }
-		else if (argv.test !== true && (!argv._ || argv._?.length === 0))
-			throw new Error("No phone number specified");
-		else {
 			if (argv.test === true) {
 				if (!PHONE_TEST && argv._.length !== 1)
 					throw new Error("No test phone specified in environment variable PHONE_TEST and no phone number passed in argument");
@@ -147,6 +201,37 @@ async function main() {
 			fs.mkdirSync(pathSave, { recursive: true });
 			const db = new Database(pathSave + '/saved.db');
 			db.pragma('journal_mode = WAL');
+
+			if (argv._[0] === "ping") {
+				const context = {
+					db,
+					argv,
+					pathPhone,
+					pathToken,
+					pathSave,
+					phone,
+					format: () => null,
+					__dirname,
+					printText: console.log
+				};
+				const spinner = cliSpinners.simpleDots;
+				let index = 0;
+				const handler = setInterval(() => {
+					const {frames} = spinner;
+					logUpdate('Trying to login'+frames[index = ++index % frames.length]);
+				}, spinner.interval);
+
+				const wa = await WhatsApp.Api({ ...context, ping: true });
+				handler.close();
+				logUpdate(`${icon(wa)} WhatsApp`);
+				console.log();
+				handler.refresh();
+				const tg = await Telegram.Api({ ...context, ping: true });
+				logUpdate(`${icon(tg)} Telegram`);
+				handler.close();
+				// TODO: remove broken tokens
+				process.exit(0);
+			}
 
 			WhatsApp.create_table(db);
 			Telegram.create_table(db);
@@ -282,7 +367,6 @@ async function main() {
 			// console.log("${colour("1;32")}Done.\x1b[0m");
 			if (format === "json")
 				console.log(JSON.stringify(dataJson));
-		}
 		return 0;
 	}
 	catch (e) {
@@ -295,5 +379,5 @@ async function main() {
 }
 
 main()
-	// .then(status => process.exit(status))
+	.then(status => process.exit(status))
 	.catch(() => process.exit(1))

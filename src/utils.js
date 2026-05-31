@@ -6,10 +6,8 @@ dotenv.config({
 	quiet: true
 })
 
-
 import path from "path";
 import crypto from "crypto";
-import yargs from "yargs";
 import fs from "fs";
 
 // export function download(url, dest, cb) {
@@ -25,17 +23,17 @@ import fs from "fs";
 // 	});
 // }
 
-yargs().help(false);
-var { argv } = yargs(process.argv.slice(2));
-if (!argv)
-	argv = {};
-const {
-	DEFAULT_COLOUR
-} = process.env;
+const str2yn = s => str2bool(s) ? "yes" : "no";
+export const formatPhone = str => (typeof str === "string" ? str.replace(/( |-|\\|\/|\.|\(|\))|^(\+*)(0*)/g, '') : str + "")
+export const icon = f => f ? `\x1b[32m\u2714\x1b[0m` : `\x1b[31m\u2718\x1b[0m`;
 
 export const str2bool = s => /^true|yes|1$/i.test(s);
-const displayColour =  argv.colour !== undefined ? argv.colour : str2bool(DEFAULT_COLOUR !== undefined ? DEFAULT_COLOUR : true);
+
+
+const argv = {colour: true};
+const displayColour = argv.colour !== undefined ? argv.colour : str2bool(DEFAULT_COLOUR !== undefined ? DEFAULT_COLOUR : true);
 export const colour = (...args) => !displayColour ? "" : "\x1b[" + args.join(";") + "m";
+
 
 export const COLOUR = {
 	NAME: "34",

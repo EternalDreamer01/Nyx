@@ -111,7 +111,7 @@ function photo_is_available(buf) {
 	return false;
 }
 
-export async function Api({ db, phone, argv, pathPhone, __dirname, format, printText }) {
+export async function Api({ db, phone, argv, pathPhone, __dirname, format, printText, ping = false }) {
 	db.prepare("UPDATE telegram SET datetimeModified = time('now'), datetimeAccessed = time('now') WHERE phone = ?").run(phone);
 	const {
 		API_TELEGRAM_TOKEN,
@@ -122,44 +122,48 @@ export async function Api({ db, phone, argv, pathPhone, __dirname, format, print
 	if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN) && argv.nonInteractive === true)
 		console.log(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m No session found`);
 	else {
-		const client = new TelegramClient(
-			new StringSession(API_TELEGRAM_TOKEN),
-			parseInt(API_TELEGRAM_ID),
-			API_TELEGRAM_HASH,
-			{
-				baseLogger: new TelegramLogger("error"),
-				timeout: 15
-			});
-
-		await client.start({
-			phoneNumber: async () => await input.text("Phone number to login:"),
-			password: async () => await input.password("Account password:"),
-			phoneCode: async () => await input.text("Received code:"),
-			onError: err => undefined /*console.error(err)*/,
-		});
-		if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN)) {
-			var env = fs.readFileSync(__dirname + "/.env", 'utf-8')
-			if (env.includes("API_TELEGRAM_TOKEN")) {
-				const newEnv = env.split("\n")
-					.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`))
-					.join("\n");
-				// API_TELEGRAM_TOKEN isn't present in .env file
-				if (env === newEnv)
-					env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"\n`;
-				else
-					env = newEnv;
-			}
-			else
-				env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"`;
-			fs.writeFileSync(__dirname + "/.env", env, 'utf-8');
-			console.log(`${colour("1;32")}\u2714\x1b[0m Telegram token saved\n`);
-		}
-
-		// spinner.text = "Looking on Telegram";
-		// spinner.start();
-		await client.connect();
-
 		try {
+			const client = new TelegramClient(
+				new StringSession(API_TELEGRAM_TOKEN),
+				parseInt(API_TELEGRAM_ID),
+				API_TELEGRAM_HASH,
+				{
+					baseLogger: new TelegramLogger("error"),
+					timeout: 15
+				});
+
+			await client.start(ping !== true ? {
+				phoneNumber: () => input.text("Phone number to login:"),
+				password: () => input.password("Account password:"),
+				phoneCode: () => input.text("Received code:"),
+				onError: err => null,
+			} : {});
+
+			if (!/^[-A-Za-z0-9+/]{32,}={0,3}$/.test(API_TELEGRAM_TOKEN)) {
+				var env = fs.readFileSync(__dirname + "/.env", 'utf-8')
+				if (env.includes("API_TELEGRAM_TOKEN")) {
+					const newEnv = env.split("\n")
+						.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, `API_TELEGRAM_TOKEN="${client.session.save()}"`))
+						.join("\n");
+					// API_TELEGRAM_TOKEN isn't present in .env file
+					if (env === newEnv)
+						env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"\n`;
+					else
+						env = newEnv;
+				}
+				else
+					env += `\nAPI_TELEGRAM_TOKEN="${client.session.save()}"`;
+				fs.writeFileSync(__dirname + "/.env", env, 'utf-8');
+				console.log(`${colour("1;32")}\u2714\x1b[0m Telegram token saved\n`);
+			}
+
+			// spinner.text = "Looking on Telegram";
+			// spinner.start();
+			await client.connect();
+
+			if (ping === true)
+				return true;
+
 			const tg = await client?.invoke(
 				new TelegramApi.contacts.ResolvePhone({
 					phone
@@ -292,6 +296,8 @@ ${pad}Last activity: ${typeof wasOnline === "number" ? colour("35") + new Date(w
 			return dataJson
 		}
 		catch (e) {
+			if (ping === true)
+				return false;
 			if (e?.errorMessage === "PHONE_NOT_OCCUPIED")
 				console.log(`${colour("1;31")}\u2a2f\x1b[0m \x1b[1mTelegram:\x1b[0m Phone not occupied`);
 			else
