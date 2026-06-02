@@ -33,21 +33,17 @@ const {
 
 const prog = "nyx-lookup";
 
+const __dirname = import.meta.dirname;
 const { cache } = xdg();
 const pathSave = `${homedir()}/${prog}`;
 const pathToken = `${cache}/${prog}/auth`;
 const editor = (EDITOR && which.sync(EDITOR, { nothrow: true })) ? EDITOR : (which.sync("vim", { nothrow: true }) ? "vim" : "nano");
 
-const EXPLORER = {
-	win: "explorer",
-	linux: "xdg-open",
-	darwin: "open",
-	macos: "open"
-};
 
 const y = yargs(process.argv.slice(2))
 	.alias('v', 'version')
 	.version(false);
+
 if (y.argv.version) {
 	const current = JSON.parse(fs.readFileSync('./package.json', 'utf8')).version;
 	// const current = require('./package.json');
@@ -57,19 +53,58 @@ if (y.argv.version) {
 	process.exit(0);
 }
 
-const __dirname = import.meta.dirname;
-
 const argv = yargs()
 	.scriptName(prog)
-	.usage('Usage: $0 [options] phone')
+	.usage('Usage: $0 { command | [options] phone }')
 	.positional('phone', {
 		describe: 'phone number to lookup',
 		type: 'string',
 	})
 	.hide('phone')
+	.command('env', `Edit env file`, /* (default editor: \x1b[1m${editor}\x1b[0m)`,*/({ argv }) => {
+		if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
+			fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
+		spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
+		process.exit(0);
+	})
+	.command("db", "Access cache database", ({ argv }) => {
+		if (!fs.existsSync(pathSave + '/saved.db') || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
+			console.error("Error: Database does not exist.");
+		else if (!which.sync('sqlite3', { nothrow: true }))
+			console.error("Error: sqlite3 not installed.");
+		else
+			spawnSync("sqlite3", [pathSave + '/saved.db'], { stdio: 'inherit' });
+		process.exit(0);
+	})
+	.command('photos', "Access cached photos", ({ argv }) => {
+		var cmd = "open";
+		switch (platform().toLowerCase()) {
+			case "win32":
+				cmd = "explorer";
+				break;
+			case "darwin":
+				cmd = "open";
+				break;
+			// android and linux
+			default:
+				cmd = "xdg-open";
+				break;
+		}
+		// console.log(argv);
+		const phone = argv._.length >= 2 ? "/" + formatPhone(argv._[1]) : "";
+		const pathPhone = `${pathSave}${phone}`;
+		spawn(cmd, [pathPhone]);
+		process.exit(0);
+	})
+	.command('ping', "Check sessions status, and remove broken ones")
+	.option('non-interactive', {
+		default: false,
+		describe: "Do not ask to login if no session was found",
+		type: 'boolean'
+	})
 	.option('photo', {
 		alias: 'p',
-		default: str2bool(AUTOSAVE),
+		// default: str2bool(AUTOSAVE),
 		describe: `Download photo into '~/${prog}'`,
 		type: 'boolean'
 	})
@@ -101,38 +136,9 @@ const argv = yargs()
 		describe: `API service to use`, // (default: \x1b[1m${DEFAULT_API || "all"}\x1b[0m)`,
 		choices: ["wa", "tg", "all"],
 	})
-	.option('force', {
+	.option('online', {
 		default: false,
 		describe: "Force online query, do not use cached data",
-		type: 'boolean'
-	})
-	.command('env', `Edit env file`, /* (default editor: \x1b[1m${editor}\x1b[0m)`,*/ ({ argv }) => {
-		if (!fs.existsSync(`${__dirname}/.env`) || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
-			fs.copyFileSync(__dirname + "/.env.txt", __dirname + "/.env");
-		spawnSync(editor, [`${__dirname}/.env`], { stdio: 'inherit' });
-		process.exit(0);
-	})
-	.command("db", "Access cache database", ({ argv }) => {
-		if (!fs.existsSync(pathSave + '/saved.db') || !fs.readFileSync(__dirname + "/.env", 'utf-8').trim().length)
-			console.error("Error: Database does not exist.");
-		else if (!which.sync('sqlite3', { nothrow: true }))
-			console.error("Error: sqlite3 not installed.");
-		else
-			spawnSync("sqlite3", [pathSave + '/saved.db'], { stdio: 'inherit' });
-		process.exit(0);
-	})
-	.command('open-photos', "Access cached photos", ({ argv }) => {
-		var cmd = EXPLORER[platform().toLowerCase().replace(/[0-9]/g, '')] || "open";
-		// console.log(argv);
-		const phone = argv._.length >= 2 ? "/" + formatPhone(argv._[1]) : "";
-		const pathPhone = `${pathSave}${phone}`;
-		spawn(cmd, [pathPhone]);
-		process.exit(0);
-	})
-	.command('ping', "Check sessions status")
-	.option('non-interactive', {
-		default: false,
-		describe: "Do not ask to login if no session was found",
 		type: 'boolean'
 	})
 	// .option('test', {
@@ -141,11 +147,18 @@ const argv = yargs()
 	// 	type: 'boolean'
 	// })
 	// .demandCommand(1, 1, 'Phone number is required')
+	.middleware(function (argv) {
+		argv.api = argv.api.toLowerCase();
+		argv.f = argv.format = argv.format.toLowerCase();
+		if (argv.save && argv.photo === undefined) argv.p = argv.photo = true;
+	}, true)
 	.check((argv) => {
+		// console.log(process.argv);
+		// if (argv)
 		// Conditional logic to check for other commands
-		if (!argv.test && !["env", "db", "open-photos", "ping"].includes((argv._[0] || "").toString())) {
+		if (!argv.test && !["env", "db", "photos", "ping"].includes((argv._[0] || "").toString())) {
 			// console.log(argv) //._[0], typeof formatPhone(argv._[0]), formatPhone(argv._[0]))
-			if(!argv._[0])
+			if (!argv._[0])
 				throw new Error('Phone number required.');
 			if (!/^[0-9]{7,17}$/.test(formatPhone(argv._[0])))
 				throw new Error('Invalid phone number format.');
@@ -165,9 +178,6 @@ const argv = yargs()
 	.strictOptions()
 	.parse(hideBin(process.argv));
 
-
-// process.exit(0);
-
 async function main() {
 	try {
 		// They shall be removed from their apps
@@ -183,91 +193,107 @@ async function main() {
 		// 	// 	'utf-8'
 		// 	// );
 		// }
-			// if (argv.test === true) {
-			// 	if (!PHONE_TEST && argv._.length !== 1)
-			// 		throw new Error("No test phone specified in environment variable PHONE_TEST and no phone number passed in argument");
-			// 	argv.nonInteractive = true;
-			// 	// Is WhatsApp possible ?
-			// 	argv.api = "tg";
-			// }
-			if (argv.api === undefined)
-				argv.api = (DEFAULT_API || "all").toLowerCase();
-			// console.log(argv.api);
+		// if (argv.test === true) {
+		// 	if (!PHONE_TEST && argv._.length !== 1)
+		// 		throw new Error("No test phone specified in environment variable PHONE_TEST and no phone number passed in argument");
+		// 	argv.nonInteractive = true;
+		// 	// Is WhatsApp possible ?
+		// 	argv.api = "tg";
+		// }
 
-			const phone = formatPhone(argv.test === true && PHONE_TEST ? PHONE_TEST : (argv._[0] + ""));
-			const pathPhone = `${pathSave}/${phone}`;
+		const phone = formatPhone(argv._[0] + "");
+		const pathPhone = `${pathSave}/${phone}`;
 
-			fs.mkdirSync(pathSave, { recursive: true });
-			const db = new Database(pathSave + '/saved.db');
-			db.pragma('journal_mode = WAL');
+		fs.mkdirSync(pathSave, { recursive: true });
+		const db = new Database(pathSave + '/saved.db');
+		db.pragma('journal_mode = WAL');
 
-			if (argv._[0] === "ping") {
-				const context = {
-					db,
-					argv,
-					pathPhone,
-					pathToken,
-					pathSave,
-					phone,
-					format: () => null,
-					__dirname,
-					printText: console.log
-				};
-				const spinner = cliSpinners.simpleDots;
-				let index = 0;
-				const handler = setInterval(() => {
-					const {frames} = spinner;
-					logUpdate('Trying to login'+frames[index = ++index % frames.length]);
-				}, spinner.interval);
+		let dataText = "";
 
-				const wa = await WhatsApp.Api({ ...context, ping: true });
-				handler.close();
-				logUpdate(`${icon(wa)} WhatsApp`);
-				console.log();
-				handler.refresh();
-				const tg = await Telegram.Api({ ...context, ping: true });
-				logUpdate(`${icon(tg)} Telegram`);
-				handler.close();
-				// TODO: remove broken tokens
-				process.exit(0);
-			}
+		const printText = text => {
+			console.log(text);
+			dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
+		}
 
-			WhatsApp.create_table(db);
-			Telegram.create_table(db);
+		const context = {
+			db,
+			argv,
+			pathPhone,
+			pathToken,
+			pathSave,
+			phone,
+			format: argv.format,
+			__dirname,
+			printText
+		};
 
-			if (!str2bool(argv.force)) {
-				try {
+		if (argv._[0] === "ping") {
+			context.format = () => null;
+			context.printText = () => null;
+			context.ping = true;
 
-					let whatsapp = {};
-					let telegram = {};
-					if (["all", "wa"].includes(argv.api)) {
-						db.prepare("UPDATE whatsapp SET datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
-						whatsapp = db.prepare("SELECT * FROM whatsapp WHERE rawPhone = ?").bind(phone).all();
-						if (whatsapp.length > 1)
-							throw new Error("Multiple record for this phone number. Debug database with --db");
-						whatsapp = whatsapp[0] || {};
+			const spinner = cliSpinners.simpleDots;
+			let index = 0;
+			const handler = setInterval(() => {
+				const { frames } = spinner;
+				logUpdate('Attempting to login' + frames[index = ++index % frames.length]);
+			}, spinner.interval);
+
+			const wa = pathToken ? await WhatsApp.Api(context) : false;
+			handler.close();
+			logUpdate(`${icon(wa)} WhatsApp`);
+			console.log();
+			handler.refresh();
+			const tg = await Telegram.Api(context);
+			logUpdate(`${icon(tg)} Telegram`);
+			handler.close();
+			
+			if (!wa)
+				fs.rmSync(pathToken, { recursive: true, force: true });
+			if (!tg)
+				fs.writeFileSync(
+					__dirname + "/.env",
+					fs.readFileSync(__dirname + "/.env", 'utf-8')
+						.split("\n")
+						.map(v => v.replace(/API_TELEGRAM_TOKEN=?.*/g, "API_TELEGRAM_TOKEN="))
+						.join("\n"),
+					'utf-8'
+				);
+			process.exit(0);
+		}
+
+		WhatsApp.create_table(db);
+		Telegram.create_table(db);
+
+		if (!str2bool(argv.online)) {
+			try {
+				let whatsapp = {};
+				let telegram = {};
+				if (["all", "wa"].includes(argv.api)) {
+					db.prepare("UPDATE whatsapp SET datetimeAccessed = time('now') WHERE rawPhone = ?").run(phone);
+					whatsapp = db.prepare("SELECT * FROM whatsapp WHERE rawPhone = ?").bind(phone).all();
+					if (whatsapp.length > 1)
+						throw new Error("Multiple record for this phone number. Debug database with --db");
+					whatsapp = whatsapp[0] || {};
+				}
+				if (["all", "tg"].includes(argv.api)) {
+					db.prepare("UPDATE telegram SET datetimeAccessed = time('now') WHERE phone = ?").run(phone);
+					telegram = db.prepare("SELECT * FROM telegram WHERE phone = ?").bind(phone).all();
+					if (telegram.length > 1)
+						throw new Error("Multiple record for this phone number. Debug database with --db");
+					telegram = telegram[0] || {};
+				}
+
+				if ((Object.keys({ ...whatsapp, ...telegram }).length !== 0)) {
+					const last_activity = Math.max(telegram.lastActivity || 0, whatsapp.lastActivity || 0);
+					var photos = 0;
+					try {
+						photos = fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length;
+					} catch (e) {
+						// console.error(e);
 					}
-					if (["all", "tg"].includes(argv.api)) {
-						db.prepare("UPDATE telegram SET datetimeAccessed = time('now') WHERE phone = ?").run(phone);
-						telegram = db.prepare("SELECT * FROM telegram WHERE phone = ?").bind(phone).all();
-						if (telegram.length > 1)
-							throw new Error("Multiple record for this phone number. Debug database with --db");
-						telegram = telegram[0] || {};
-					}
 
-					if ((Object.keys({ ...whatsapp, ...telegram }).length !== 0)) {
-						// console.log(whatsapp, telegram);
-						const last_activity = Math.max(telegram.lastActivity || 0, whatsapp.lastActivity || 0);
-						// console.log(process.env.DEFAULT_COLOUR)
-						// console.log(telegram);
-						var photos = 0;
-						try {
-							photos = fs.readdirSync(pathPhone).filter(v => !v.endsWith(".txt") && !v.endsWith(".json")).length;
-						} catch (e) {
-							// console.error(e);
-						}
-
-						console.log(`  Type:          ${typeColour(whatsapp.type || telegram.className)}${whatsapp.type || telegram.className || ""}\x1b[0m
+					console.log(`  Type:          ${typeColour(whatsapp.type || telegram.className)}${whatsapp.type || telegram.className || ""}\x1b[0m
   Bot:           ${typeColour(telegram.bot == 1)}${telegram.bot || false}\x1b[0m
   Verified:      ${typeColour(telegram.verified == 1)}${telegram.verified || false}\x1b[0m
   Restricted:    ${typeColour(telegram.restricted == 1)}${telegram.restricted || false}\x1b[0m
@@ -292,80 +318,37 @@ async function main() {
   Language:      ${colour("32")}${telegram.langCode || ""}\x1b[0m
   Last activity: ${typeof last_activity === "number" && last_activity != 0 ? colour("35") + new Date(last_activity * 1000) : "\x1b[3mUnknown"}\x1b[0m
 `);
-						return 0;
-					}
-				}
-				catch (err) {
-					if (!err.message.toLowerCase().includes("not such table")) {
-						console.error(err);
-					}
-					return 1;
+					return 0;
 				}
 			}
-			// return 0;
-
-			if (argv.s)
-				argv.save = true;
-			else if (argv.save === undefined)
-				argv.save = str2bool(AUTOSAVE);
-
-			if (argv.save)
-				argv.photo = true;
-
-			// if (argv.p)
-			// 	argv.photo = true;
-			// else if (argv.photo === undefined)
-			// 	argv.photo = str2bool(AUTOSAVE_PHOTO);
-
-			if (argv.save !== false || argv.p || argv.photo) {
-				argv.photo = true;
-				fs.mkdirSync(pathPhone, { recursive: true });
+			catch (err) {
+				if (!err.message.toLowerCase().includes("not such table")) {
+					console.error(err);
+				}
+				return 1;
 			}
+		}
+		if (argv.photo)
+			fs.mkdirSync(pathPhone, { recursive: true });
 
-			const format = (() => {
-				if (typeof argv.format === "string")
-					return argv.format.toLowerCase();
-				if (typeof argv.f === "string")
-					return argv.f.toLowerCase();
-				return !DEFAULT_INFO_FORMAT || DEFAULT_INFO_FORMAT === "json" ? "json" : "text";
-			})();
+		const dataJson = {
+			whatsapp: undefined,
+			telegram: undefined
+		};
 
-			const dataJson = {
-				whatsapp: undefined,
-				telegram: undefined
-			};
-			let dataText = "";
+		if (["all", "wa"].includes(argv.api)) {
+			// spinner.succeed("");
+			dataJson.whatsapp = await WhatsApp.Api(context);
+		}
 
-			const printText = text => {
-				console.log(text);
-				dataText += text.replace(/\x1b[[0-9;]+m/g, "") + "\n";
-			}
+		if (["all", "tg"].includes(argv.api)) {
+			// spinner.succeed("");
+			dataJson.telegram = await Telegram.Api(context);
+		}
 
-			const context = {
-				db,
-				argv,
-				pathPhone,
-				pathToken,
-				pathSave,
-				phone,
-				format,
-				__dirname,
-				printText
-			};
-
-			if (["all", "wa"].includes(argv.api)) {
-				// spinner.succeed("");
-				dataJson.whatsapp = await WhatsApp.Api(context);
-			}
-
-			if (["all", "tg"].includes(argv.api)) {
-				// spinner.succeed("");
-				dataJson.telegram = await Telegram.Api(context);
-			}
-
-			// console.log("${colour("1;32")}Done.\x1b[0m");
-			if (format === "json")
-				console.log(JSON.stringify(dataJson));
+		// console.log("${colour("1;32")}Done.\x1b[0m");
+		if (format === "json")
+			console.log(JSON.stringify(dataJson));
 		return 0;
 	}
 	catch (e) {

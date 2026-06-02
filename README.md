@@ -79,7 +79,7 @@ __Supports international phone format only__
 
 Raw format is digits only (e.g `61491570006`) however, you may optionally specify :
 * `+` at the beginning, eventually followed by `0`: `+0448081570192`
-* `-`, `.`, ` ` (space), `/` and `\` anywhere: `61 491-570-006`
+* `-`, `.`, ` ` (space), `(`, `)`, `/` and `\` anywhere: `61 491-570-006`
 
 ```sh
 $ nyx-lookup "+44 808 157 0192"
@@ -89,30 +89,29 @@ $ nyxl 448081570192
 $ nyx-lookup
 Usage: nyx-lookup [options] phone
 
-  -p --photo        Download photo into '/home/<user>/nyx-lookup'
-  -s --[no-]save    Save user info and photo (autosave: yes)
-  -f --format={ text | json }
-                    Define output format (default: text)
-  -c --[no-]colour  No colour (only for 'text' format) (default: yes)
-  -e --env          Edit env file (default editor: vim)
-     --api={ wa | tg | all }
-                    API service to use (default: all)
-     --force        Force query, do not use cached data.
-     --db           Access database cache.
-     --open-photos[=phone]
-                    Access cached photos.
+Commands:
+  nyx-lookup env     Edit env file
+  nyx-lookup db      Access cache database
+  nyx-lookup photos  Access cached photos
+  nyx-lookup ping    Check sessions status, and remove broken ones
 
-     --non-interactive
-                    Will not ask to login if no session was found
-     --test         Test phone from env. variable PHONE_TEST
-                    Non-interactive is automatically true
-                    
-  -h --help        Show this help
-  -v --version     Show version
-  
-  Status:
-    WhatsApp: ✔
-    Telegram: ✔
+Options:
+      --non-interactive  Do not ask to login if no session was found
+                                                      [boolean] [default: false]
+  -p, --photo            Download photo into '~/nyx-lookup'            [boolean]
+  -s, --save             Save user info and photo      [boolean] [default: true]
+  -f, --format           Define output format
+                                     [choices: "text", "json"] [default: "text"]
+      --api              API service to use
+                                   [choices: "wa", "tg", "all"] [default: "all"]
+      --online           Force online query, do not use cached data
+                                                      [boolean] [default: false]
+  -v, --version          Show version number                           [boolean]
+  -h, --help             Show help                                     [boolean]
+
+Status:
+  WhatsApp: ✘
+  Telegram: ✔
 ```
 
 ### Variables
