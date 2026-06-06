@@ -150,6 +150,7 @@ const argv = yargs()
 	.middleware(function (argv) {
 		argv.api = argv.api.toLowerCase();
 		argv.f = argv.format = argv.format.toLowerCase();
+		argv.phone = argv._[0] ? formatPhone(argv._[0] + "") : undefined;
 		if (argv.save && argv.photo === undefined) argv.p = argv.photo = true;
 	}, true)
 	.check((argv) => {
@@ -158,9 +159,9 @@ const argv = yargs()
 		// Conditional logic to check for other commands
 		if (!argv.test && !["env", "db", "photos", "ping"].includes((argv._[0] || "").toString())) {
 			// console.log(argv) //._[0], typeof formatPhone(argv._[0]), formatPhone(argv._[0]))
-			if (!argv._[0])
+			if (!argv.phone)
 				throw new Error('Phone number required.');
-			if (!/^[0-9]{7,17}$/.test(formatPhone(argv._[0])))
+			if (!/^[0-9]{7,17}$/.test(argv.phone))
 				throw new Error('Invalid phone number format.');
 		}
 		return true; // If checks pass
@@ -201,7 +202,7 @@ async function main() {
 		// 	argv.api = "tg";
 		// }
 
-		const phone = formatPhone(argv._[0] + "");
+		const phone = argv.phone;
 		const pathPhone = `${pathSave}/${phone}`;
 
 		fs.mkdirSync(pathSave, { recursive: true });
