@@ -49,12 +49,6 @@ By using this project, you acknowledge and agree to abide by the principles outl
 npm i -g nyx-lookup
 ```
 
-<!-- ### Development
-
-```sh
-git clone --recurse-submodules -j4 https://github.com/EternalDreamer01/Nyx.git
-``` -->
-
 ### Prerequisites
 
 * Node 20+
@@ -110,7 +104,7 @@ Options:
   -h, --help             Show help                                     [boolean]
 
 Status:
-  WhatsApp: ✘
+  WhatsApp: ✔
   Telegram: ✔
 ```
 
@@ -181,7 +175,7 @@ If you were getting this error:
 ```
 Error: Evaluation failed: Error: wid error: invalid wid
 ```
-Try cleaning up cache using `nyx-lookup --clean` or `rm -rf ~/.cache/nyx-lookup/`
+Try cleaning up cache using `rm -rf ~/.cache/nyx-lookup/`
 
 ### Outdated Version
 If you were getting this error:

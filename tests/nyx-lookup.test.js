@@ -6,7 +6,7 @@
  * 
  * PROJECT:   nyx-lookup
  * 
- * MODIFIED:  Mon May 11 2026
+ * MODIFIED:  Fri Jul 10 2026
  * BY:        Dimitri Simon
  * 
  * Copyright (c) 2026 Dimitri Simon
@@ -28,9 +28,13 @@ const savedDbDir = path.join(HOME, prog);
 const savedDb = path.join(savedDbDir, 'saved.db');
 const packageJsonPath = path.resolve('./package.json');
 
-function run(cmd, opts = {}) {
+
+const phoneTest = process.env.PHONE_TEST;
+const args = "--api=tg"
+
+function run_prog(cmd, opts = {}) {
 	try {
-		return execSync(cmd, { encoding: 'utf8', stdio: 'pipe', timeout: 15000, ...opts });
+		return execSync(`node index.js ${phoneTest} ${args} ${cmd}`, { encoding: 'utf8', stdio: 'pipe', timeout: 15000, ...opts });
 	} catch (e) {
 		// return stdout/stderr combined to emulate shell test behavior
 		return (e.stdout || '') + (e.stderr || '');
@@ -40,7 +44,7 @@ function run(cmd, opts = {}) {
 function sqliteExec(sql) {
 	try {
 		// echo ".exit" | sqlite3 "$HOME/$prog/saved.db" -cmd "$1" || true
-		return run(`echo ".exit" | sqlite3 "${savedDb}" -cmd "${sql.replace(/"/g, '\\"')}"`);
+		return run_prog(`echo ".exit" | sqlite3 "${savedDb}" -cmd "${sql.replace(/"/g, '\\"')}"`);
 	} catch (e) {
 		return (e.stdout || '') + (e.stderr || '');
 	}
@@ -65,28 +69,24 @@ beforeAll(() => {
 	if (!fs.existsSync(savedDb)) fs.writeFileSync(savedDb, '');
 });
 
-describe('nyx-lookup CLI (converted from bats)', () => {
-	test('env files exist', () => {
+describe('nyx-lookup - env', () => {
+	test('env files', () => {
 		expect(fs.existsSync(envPath)).toBe(true);
 		expect(fs.existsSync(envPath + '.txt')).toBe(true);
-	});
-
-	test('help output (length)', () => {
-		const output = run('node index.js -h');
-		expect(output.length).toBeGreaterThan(800);
+		if (!phoneTest) throw new Error('PHONE_TEST not set in .env');
 	});
 
 	test('version - latest', () => {
 		// read real version and latest from npm
 		const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 		const realVersion = pkg.version;
-		const latestVersion = run(`npm view ${prog} version`).trim();
+		const latestVersion = execSync(`npm view ${prog} version`, { encoding: 'utf8', stdio: 'pipe', timeout: 2000 }).trim();
 
 		// set package.json to latest
 		pkg.version = latestVersion;
 		fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2));
 
-		const output = run('node index.js -v');
+		const output = run_prog('-v');
 		expect(output).not.toMatch(/Latest:/);
 
 		// restore
@@ -102,35 +102,37 @@ describe('nyx-lookup CLI (converted from bats)', () => {
 		pkg.version = '1.0.0';
 		fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2));
 
-		const output = run('node index.js -v');
+		const output = run_prog('-v');
 		// restore
 		pkg.version = realVersion;
 		fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2));
 
 		expect(output).toMatch(/Latest:/);
 	});
+})
+
+describe('nyx-lookup - main', () => {
+	test('help output', () => {
+		const output = run_prog('-h');
+		expect(output.length).toBeGreaterThan(800);
+	});
 
 	test('phone lookup - initial', () => {
-		const phoneTest = process.env.PHONE_TEST;
-		if (!phoneTest) throw new Error('PHONE_TEST not set in .env');
-
 		sqliteDelete(phoneTest);
 
-		const output = run('node index.js --test --force --save --format=text');
+		const output = run_prog('--online --save --format=text');
 		expect(output.length).toBeGreaterThan(400);
 
 		const dbOut = sqliteSelect(phoneTest);
 		expect(dbOut.length).toBeGreaterThan(40);
 	});
 
-	test('phone lookup - colour flags', () => {
-		const phoneTest = process.env.PHONE_TEST;
-		if (!phoneTest) throw new Error('PHONE_TEST not set in .env');
+	test('phone lookup - colour', () => {
 		// sqliteDelete(phoneTest);
 
-		const output1 = run('node index.js --test --save --format=text');
-		const output2 = run('node index.js --test --save --format=text --no-colour');
-		const output3 = run('node index.js --test --save --format=text --colour');
+		const output1 = run_prog('--save --format=text');
+		const output2 = run_prog('--save --format=text --no-colour');
+		const output3 = run_prog('--save --format=text --colour');
 
 		// console.log(output1.replace(/\x1b\[[0-9;]+m/g, ''), output2.replace(/\x1b\[[0-9;]+m/g, ''));
 		expect(output1.length).toBeGreaterThan(400);
@@ -145,15 +147,12 @@ describe('nyx-lookup CLI (converted from bats)', () => {
 	// });
 
 	test('phone lookup - not logged in - cached data', () => {
-		const phoneTest = process.env.PHONE_TEST;
-		if (!phoneTest) throw new Error('PHONE_TEST not set in .env');
-
-		const output = run(`node index.js ${phoneTest} --test --format=text`);
+		const output = run_prog('--format=text');
 		expect(output.length).toBeGreaterThan(300);
 	});
 
 	test('phone lookup - logged in', () => {
-		const output = run('node index.js --test --force --format=text');
+		const output = run_prog('--online --format=text');
 		expect(output.length).toBeGreaterThan(450);
 	});
 });

@@ -157,7 +157,7 @@ const argv = yargs()
 		// console.log(process.argv);
 		// if (argv)
 		// Conditional logic to check for other commands
-		if (!argv.test && !["env", "db", "photos", "ping"].includes((argv._[0] || "").toString())) {
+		if (!["env", "db", "photos", "ping"].includes((argv._[0] || "").toString())) {
 			// console.log(argv) //._[0], typeof formatPhone(argv._[0]), formatPhone(argv._[0]))
 			if (!argv.phone)
 				throw new Error('Phone number required.');
@@ -348,7 +348,7 @@ async function main() {
 		}
 
 		// console.log("${colour("1;32")}Done.\x1b[0m");
-		if (format === "json")
+		if (argv.format === "json")
 			console.log(JSON.stringify(dataJson));
 		return 0;
 	}
