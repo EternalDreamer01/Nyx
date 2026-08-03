@@ -22,7 +22,7 @@
   "license": "LGPL-3.0-or-later",
   "dependencies": {
     "@folder/xdg": "^4.0.1",
-    "better-sqlite3": "^12.9.0",
+    "better-sqlite3": "^13.0.2",
     "cli-spinners": "^3.4.0",
     "dotenv": "^17.4.2",
     "input": "^1.0.1",
