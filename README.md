@@ -58,11 +58,11 @@ npm i -g nyx-lookup
 | API | Information | Login | Session location |
 |-|-|-|-|
 | WhatsApp | <ul><li>Type (User/Business)</li><li>[Name / pushname](#whats-the-difference-between-name-pushname-and-shortname-) </li><li>Picture</li><li>About</li><li>Last activity</li></ul> | QR code | <table><thead><tr><th>OS</th><th>Directory</th></tr></thead><tbody><tr><td>Windows</td><td>`%LocalAppData%`</td></tr><tr><td>Linux</td><td>`~/.cache`</td></tr><tr><td>macOS</td><td>`~/Library/Caches`</td></tr></tbody></table> |
-| Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup -e` |
+| Telegram | <ul><li>Type (User/Business)</li><li>Bot</li><li>Restriction</li><li>First/last name / Username</li><li>Verified</li><li>Premium</li><li>Picture</li><li>Language</li><li>Last activity</li></ul> | [**API Token**](https://my.telegram.org/apps) | Environment. See `nyx-lookup env` |
 
 You must login to use their API ;
 * WhatsApp access is via a QR Code
-* Telegram access is via an [API token](https://my.telegram.org/apps). Edit with the command `nyx-lookup -e`:
+* Telegram access is via an [API token](https://my.telegram.org/apps). Edit with the command `nyx-lookup env`:
 	* `API_TELEGRAM_ID` and `API_TELEGRAM_HASH`
 	* Login once with the code you receive, it will store the token in `API_TELEGRAM_TOKEN`
 
@@ -110,7 +110,7 @@ Status:
 
 ### Variables
 
-Editable using `nyx-lookup -e` ;
+Editable using `nyx-lookup env` ;
 
 | Variable | Description | Default | Possible values |
 |-:|-|:-:|-|
@@ -125,7 +125,7 @@ Editable using `nyx-lookup -e` ;
 *Boolean accept `true`/`false`, `yes`/`no`, `1`/`0`.*
 
 The database of saved results is accessible at `~/nyx-lookup/saved.db`.
-To enable/disable autosave, run `nyx-lookup -e` and edit `AUTOSAVE`.
+To enable/disable autosave, run `nyx-lookup env` and edit `AUTOSAVE`.
 
 ## FAQ
 
