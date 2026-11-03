@@ -24,7 +24,7 @@
     "@folder/xdg": "^4.0.1",
     "better-sqlite3": "^13.0.3",
     "cli-spinners": "^3.4.0",
-    "dotenv": "^18.0.8",
+    "dotenv": "^18.0.9",
     "input": "^1.0.1",
     "log-update": "^8.0.0",
     "qrcode-terminal": "^0.12.0",
